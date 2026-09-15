@@ -1,6 +1,6 @@
 import { NavLink } from "react-router-dom";
 
-const items = [["/dashboard", "Dashboard"], ["/customers", "Customers"], ["/predictions", "Predictions"], ["/offers", "Offers"], ["/analytics", "Analytics"], ["/health", "Health Scores"], ["/data", "Data"], ["/settings", "Settings"]];
+const items = [["/dashboard", "Dashboard"], ["/customers", "Customers"], ["/predict", "Individual"], ["/batch", "Batch Analysis"], ["/offers", "Offers"], ["/analytics", "Analytics"], ["/health", "Health Scores"], ["/data", "Data"], ["/settings", "Settings"]];
 export default function Sidebar({ open, onClose }) {
   return <aside className={`${open ? "translate-x-0" : "-translate-x-full"} glass-sidebar fixed inset-y-16 left-0 z-20 w-60 p-4 transition-transform md:static md:inset-auto md:translate-x-0`}>
     <div className="mb-6 rounded-xl border border-blue-100 bg-blue-50/70 p-3"><p className="text-xs font-semibold uppercase tracking-wider text-blue-600">Workspace</p><p className="mt-1 truncate text-sm font-semibold text-slate-800">Demo Telecom</p><p className="mt-1 text-xs text-slate-500">Growth plan</p></div>

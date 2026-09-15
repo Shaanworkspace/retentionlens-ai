@@ -8,6 +8,7 @@ import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
 import Predict from "./pages/Predict";
 import Offers from "./pages/Offers";
+import BatchAnalysis from "./pages/BatchAnalysis";
 import Profile from "./pages/Profile";
 import Sidebar from "./components/Sidebar";
 import Customers from "./pages/Customers";
@@ -38,6 +39,7 @@ export default function App() {
           <Route path="/predict" element={<PrivatePage><Predict /></PrivatePage>} />
           <Route path="/predictions" element={<PrivatePage><Predictions /></PrivatePage>} />
           <Route path="/offers" element={<PrivatePage><Offers /></PrivatePage>} />
+          <Route path="/batch" element={<PrivatePage><BatchAnalysis /></PrivatePage>} />
           <Route path="/profile" element={<PrivatePage><Profile /></PrivatePage>} />
           <Route path="/customers" element={<PrivatePage><Customers /></PrivatePage>} />
           <Route path="/analytics" element={<PrivatePage><Analytics /></PrivatePage>} />
