@@ -2,16 +2,22 @@ import pathlib
 import pickle
 import pandas as pd
 
-MODEL_PATH = pathlib.Path(__file__).resolve().parents[3] / "ml" / "models" / "model.pkl"
+ROOTS = [
+    pathlib.Path(__file__).resolve().parents[3] / "ml" / "models" / "model.pkl",
+    pathlib.Path(__file__).resolve().parents[2] / "ml" / "models" / "model.pkl",
+    pathlib.Path("/app/ml/models/model.pkl"),
+]
 _model = None
 
 def get_model():
     global _model
     if _model is None:
-        if not MODEL_PATH.exists():
-            return None
-        with open(MODEL_PATH, "rb") as f:
-            _model = pickle.load(f)
+        for p in ROOTS:
+            if p.exists():
+                with open(p, "rb") as f:
+                    _model = pickle.load(f)
+                return _model
+        return None
     return _model
 
 def get_risk_category(proba: float):

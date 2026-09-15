@@ -13,3 +13,5 @@ pandas
 python-dotenv
 groq
 email-validator
+pymysql
+cryptography
