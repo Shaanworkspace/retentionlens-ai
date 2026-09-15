@@ -32,7 +32,16 @@ class PredictRequest(BaseModel):
     PaperlessBilling: str
     PaymentMethod: str
 
+class RiskCategory(BaseModel):
+    id: int
+    label: str
+    detail: str
+    color: str
+    score: str
+    action: str
+
 class PredictResponse(BaseModel):
     churn: int
     churn_label: str
     probability: float
+    risk_category: RiskCategory

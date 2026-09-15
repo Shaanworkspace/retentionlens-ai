@@ -50,9 +50,10 @@ async def batch_predict(file: UploadFile = File(...), db: Session = Depends(get_
             break
         try:
             data = normalize_row(raw)
-            label, proba = predict_one(data)
-            # GenAI offer per row
-            offers = generate_offers({**data, "churn_prob": proba}, db)["offers_text"] if label == 1 else "Low risk - nurture"
+            label, proba, risk = predict_one(data)
+            # GenAI offer per row based on risk tier
+            offers = generate_offers({**data, "churn_prob": proba}, db)["offers_text"] if risk["id"] >= 3 else "Low risk - nurture"
+            result_risk = risk
             if label == 1:
                 churn_count += 1
             # save to DB (batch)
@@ -62,7 +63,7 @@ async def batch_predict(file: UploadFile = File(...), db: Session = Depends(get_
                     db.commit()
             except Exception:
                 db.rollback()
-            results.append({"row": idx, "churn": label, "churn_label": "Yes" if label==1 else "No", "probability": round(proba,3), "offers": offers, "data": data})
+            results.append({"row": idx, "churn": label, "churn_label": "Yes" if label==1 else "No", "probability": round(proba,3), "risk_category": result_risk, "offers": offers, "data": data})
         except Exception as e:
             results.append({"row": idx, "error": str(e), "data": raw})
 

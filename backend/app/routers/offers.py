@@ -11,8 +11,8 @@ router = APIRouter(prefix="/api/retention", tags=["retention"])
 @router.post("/offers")
 def get_offers(req: PredictRequest, db: Session = Depends(get_db), user=Depends(get_current_user)):
     data = req.model_dump()
-    label, proba = predict_one(data)
-    customer = {**data, "churn_prob": proba}
+    label, proba, risk = predict_one(data)
+    customer = {**data, "churn_prob": proba, "risk_label": risk["label"]}
     result = generate_offers(customer, db)
     try:
         pred = Prediction(
@@ -36,6 +36,7 @@ def get_offers(req: PredictRequest, db: Session = Depends(get_db), user=Depends(
         "churn": label,
         "churn_label": "Yes" if label == 1 else "No",
         "probability": round(proba, 3),
+        "risk_category": risk,
         "offers": result["offers_text"],
         "history_used": result["history_used"],
     }

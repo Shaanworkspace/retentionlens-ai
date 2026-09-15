@@ -10,7 +10,7 @@ router = APIRouter(prefix="/api", tags=["predict"])
 @router.post("/predict", response_model=PredictResponse)
 def predict(req: PredictRequest, db: Session = Depends(get_db), user=Depends(get_current_user)):
     data = req.model_dump()
-    label, proba = predict_one(data)
+    label, proba, risk = predict_one(data)
     # save prediction for history (keep last 3 per user via query limit)
     try:
         pred = Prediction(
@@ -29,7 +29,7 @@ def predict(req: PredictRequest, db: Session = Depends(get_db), user=Depends(get
         db.commit()
     except Exception:
         db.rollback()
-    return {"churn": label, "churn_label": "Yes" if label == 1 else "No", "probability": round(proba, 3)}
+    return {"churn": label, "churn_label": "Yes" if label == 1 else "No", "probability": round(proba, 3), "risk_category": risk}
 
 @router.get("/predict/history")
 def get_history(db: Session = Depends(get_db), user=Depends(get_current_user)):
