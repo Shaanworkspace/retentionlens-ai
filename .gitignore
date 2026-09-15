@@ -8,5 +8,8 @@ app.db
 ml/data/raw/*.csv
 ml/models/*.pkl
 .env
+.env.local
+.env.production
+!.env.example
 .DS_Store
 frontend/dist
