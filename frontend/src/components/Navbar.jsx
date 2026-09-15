@@ -10,6 +10,7 @@ export default function Navbar() {
           <>
             <Link to="/dashboard" className="hover:text-blue-300">Dashboard</Link>
             <Link to="/predict" className="hover:text-blue-300">Predict</Link>
+            <Link to="/offers" className="hover:text-blue-300">Offers</Link>
             <button onClick={logout} className="bg-red-600 px-3 py-1 rounded">Logout</button>
           </>
         ) : (
