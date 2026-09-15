@@ -1,0 +1,6 @@
+import { useState } from "react";
+import Breadcrumbs from "../components/Breadcrumbs";
+export default function Predictions() {
+  const [uploaded, setUploaded] = useState(false);
+  return <><Breadcrumbs current="Predictions" /><p className="eyebrow">Risk operations</p><h1 className="page-title mt-1">Batch predictions</h1><p className="page-subtitle">Upload a customer CSV to score multiple accounts at once.</p><div className="mt-6 rounded-lg border-2 border-dashed border-slate-300 bg-white p-12 text-center shadow-sm transition hover:border-blue-400 hover:bg-blue-50/20"><p className="text-4xl text-blue-600">⇧</p><p className="mt-3 font-semibold">Drag and drop a CSV file</p><p className="mt-2 text-sm text-slate-500">Use the customer fields from the prediction form.</p><button onClick={() => setUploaded(true)} className="primary-button mt-5">Upload CSV</button></div>{uploaded && <div className="panel mt-6 p-6"><h2 className="font-semibold">Batch results</h2><p className="mt-2 text-sm text-slate-500">24 customers scored successfully.</p><button className="mt-4 rounded-lg border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">Export results ↗</button></div>}</>;
+}

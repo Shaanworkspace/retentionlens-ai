@@ -13,15 +13,18 @@ export default function Login() {
     try { await login(email, password); navigate("/dashboard"); } catch (err) { setError(err.response?.data?.detail || "Login failed"); }
   };
   return (
-    <div className="max-w-md mx-auto mt-16 p-6 border rounded-lg bg-white">
-      <h2 className="text-2xl font-bold">Login</h2>
-      <form onSubmit={submit} className="mt-4 space-y-4">
-        <input className="w-full border p-2 rounded" placeholder="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-        <input className="w-full border p-2 rounded" placeholder="Password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
-        {error && <p className="text-red-600 text-sm">{error}</p>}
-        <button className="w-full bg-blue-600 text-white py-2 rounded">Login</button>
+    <div className="mx-auto max-w-md px-5 py-16">
+      <div className="panel p-6 sm:p-8">
+      <p className="text-sm font-semibold uppercase tracking-wider text-slate-500">Welcome back</p>
+      <h2 className="mt-2 text-2xl font-bold tracking-tight text-slate-900">Log in to ChurnSense</h2>
+      <form onSubmit={submit} className="mt-7 space-y-4">
+        <label className="block text-sm font-medium text-slate-700">Email<input className="field mt-1.5" placeholder="you@company.com" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required /></label>
+        <label className="block text-sm font-medium text-slate-700">Password<input className="field mt-1.5" placeholder="Enter your password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required /></label>
+        {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
+        <button className="primary-button w-full">Log in</button>
       </form>
-      <p className="mt-4 text-sm">No account? <Link to="/signup" className="text-blue-600">Sign up</Link></p>
+      <p className="mt-6 text-center text-sm text-slate-500">No account? <Link to="/signup" className="font-semibold text-slate-900 hover:underline">Create one</Link></p>
+      </div>
     </div>
   );
 }

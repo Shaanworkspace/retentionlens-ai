@@ -8,6 +8,23 @@ import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
 import Predict from "./pages/Predict";
 import Offers from "./pages/Offers";
+import Profile from "./pages/Profile";
+import Sidebar from "./components/Sidebar";
+import Customers from "./pages/Customers";
+import Predictions from "./pages/Predictions";
+import Analytics from "./pages/Analytics";
+import HealthScores from "./pages/HealthScores";
+import Data from "./pages/Data";
+import Settings from "./pages/Settings";
+import NotFound from "./pages/NotFound";
+import { useState } from "react";
+
+function PrivateLayout({ children }) {
+  const [open, setOpen] = useState(false);
+  return <div className="flex min-h-[calc(100vh-4rem)]"><button onClick={() => setOpen(!open)} className="glass-fab fixed bottom-4 left-4 z-40 rounded-full px-4 py-3 text-white shadow-lg md:hidden" aria-label="Toggle menu">☰</button><Sidebar open={open} onClose={() => setOpen(false)} /><main className="glass-main min-w-0 flex-1"><div className="mx-auto max-w-7xl p-6">{children}</div></main></div>;
+}
+
+function PrivatePage({ children }) { return <PrivateRoute><PrivateLayout>{children}</PrivateLayout></PrivateRoute>; }
 export default function App() {
   return (
     <AuthProvider>
@@ -17,9 +34,17 @@ export default function App() {
           <Route path="/" element={<Landing />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
-          <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
-          <Route path="/predict" element={<PrivateRoute><Predict /></PrivateRoute>} />
-          <Route path="/offers" element={<PrivateRoute><Offers /></PrivateRoute>} />
+          <Route path="/dashboard" element={<PrivatePage><Dashboard /></PrivatePage>} />
+          <Route path="/predict" element={<PrivatePage><Predict /></PrivatePage>} />
+          <Route path="/predictions" element={<PrivatePage><Predictions /></PrivatePage>} />
+          <Route path="/offers" element={<PrivatePage><Offers /></PrivatePage>} />
+          <Route path="/profile" element={<PrivatePage><Profile /></PrivatePage>} />
+          <Route path="/customers" element={<PrivatePage><Customers /></PrivatePage>} />
+          <Route path="/analytics" element={<PrivatePage><Analytics /></PrivatePage>} />
+          <Route path="/health" element={<PrivatePage><HealthScores /></PrivatePage>} />
+          <Route path="/data" element={<PrivatePage><Data /></PrivatePage>} />
+          <Route path="/settings" element={<PrivatePage><Settings /></PrivatePage>} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

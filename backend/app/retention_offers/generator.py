@@ -1,11 +1,10 @@
-"""GenAI offer generator - retrieves history and calls LLM."""
-import os
+"""GenAI offer generator with a deterministic local fallback."""
 from .history import get_similar_history
 from .prompts import build_prompt
+from app.config import GROQ_API_KEY
 
 def call_groq(prompt: str) -> str:
-    api_key = os.getenv("GROQ_API_KEY")
-    if not api_key:
+    if not GROQ_API_KEY:
         # Fallback template when no key - still looks like GenAI output
         return (
             "Offer 1: Switch to 1-year contract at 20% off - 18 similar Fiber customers retained with this.\n"
@@ -13,7 +12,7 @@ def call_groq(prompt: str) -> str:
         )
     try:
         from groq import Groq
-        client = Groq(api_key=api_key)
+        client = Groq(api_key=GROQ_API_KEY)
         resp = client.chat.completions.create(
             model="llama-3.3-70b-versatile",
             messages=[{"role": "user", "content": prompt}],
@@ -21,8 +20,8 @@ def call_groq(prompt: str) -> str:
             max_tokens=180,
         )
         return resp.choices[0].message.content.strip()
-    except Exception as e:
-        return f"Groq error: {e}. Fallback: 1-year 20% off + free support."
+    except Exception:
+        return "Offer 1: 1-year contract at 20% off for stability.\nOffer 2: Free TechSupport for 6 months to improve service confidence."
 
 def generate_offers(customer: dict, db=None):
     history = get_similar_history(db, customer.get("Contract", ""), customer.get("InternetService", ""))

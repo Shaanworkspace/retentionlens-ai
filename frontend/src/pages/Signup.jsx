@@ -13,15 +13,18 @@ export default function Signup() {
     try { await signup(email, password); navigate("/dashboard"); } catch (err) { setError(err.response?.data?.detail || "Signup failed"); }
   };
   return (
-    <div className="max-w-md mx-auto mt-16 p-6 border rounded-lg bg-white">
-      <h2 className="text-2xl font-bold">Sign Up</h2>
-      <form onSubmit={submit} className="mt-4 space-y-4">
-        <input className="w-full border p-2 rounded" placeholder="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-        <input className="w-full border p-2 rounded" placeholder="Password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
-        {error && <p className="text-red-600 text-sm">{error}</p>}
-        <button className="w-full bg-blue-600 text-white py-2 rounded">Create Account</button>
+    <div className="mx-auto max-w-md px-5 py-16">
+      <div className="panel p-6 sm:p-8">
+      <p className="text-sm font-semibold uppercase tracking-wider text-slate-500">Get started</p>
+      <h2 className="mt-2 text-2xl font-bold tracking-tight text-slate-900">Create your account</h2>
+      <form onSubmit={submit} className="mt-7 space-y-4">
+        <label className="block text-sm font-medium text-slate-700">Email<input className="field mt-1.5" placeholder="you@company.com" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required /></label>
+        <label className="block text-sm font-medium text-slate-700">Password<input className="field mt-1.5" placeholder="Create a password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required /></label>
+        {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
+        <button className="primary-button w-full">Create account</button>
       </form>
-      <p className="mt-4 text-sm">Have account? <Link to="/login" className="text-blue-600">Login</Link></p>
+      <p className="mt-6 text-center text-sm text-slate-500">Already have an account? <Link to="/login" className="font-semibold text-slate-900 hover:underline">Log in</Link></p>
+      </div>
     </div>
   );
 }
