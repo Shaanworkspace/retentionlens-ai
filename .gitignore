@@ -9,3 +9,4 @@ ml/data/raw/*.csv
 ml/models/*.pkl
 .env
 .DS_Store
+frontend/dist
