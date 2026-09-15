@@ -1,0 +1,18 @@
+{
+  "accuracy": 0.805,
+  "precision": 0.664,
+  "recall": 0.532,
+  "f1": 0.591,
+  "roc_auc": 0.841,
+  "confusion_matrix": [
+    [
+      933,
+      100
+    ],
+    [
+      174,
+      198
+    ]
+  ],
+  "best_model": "logreg"
+}
