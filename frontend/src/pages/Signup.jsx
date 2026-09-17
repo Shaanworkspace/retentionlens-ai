@@ -5,12 +5,13 @@ export default function Signup() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const { signup } = useAuth();
   const navigate = useNavigate();
   const submit = async (e) => {
     e.preventDefault();
-    setError("");
-    try { await signup(email, password); navigate("/dashboard"); } catch (err) { setError(err.response?.data?.detail || "Signup failed"); }
+    setError(""); setLoading(true);
+    try { await signup(email, password); navigate("/dashboard"); } catch (err) { setError(err.response?.data?.detail || "Signup failed"); } finally { setLoading(false); }
   };
   return (
     <div className="mx-auto max-w-md px-5 py-16">
@@ -21,7 +22,7 @@ export default function Signup() {
         <label className="block text-sm font-medium text-slate-700">Email<input className="field mt-1.5" placeholder="you@company.com" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required /></label>
         <label className="block text-sm font-medium text-slate-700">Password<input className="field mt-1.5" placeholder="Create a password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required /></label>
         {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
-        <button className="primary-button w-full">Create account</button>
+        <button disabled={loading} className="primary-button w-full hover:shadow-md hover:bg-slate-900 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2">{loading && <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />}{loading ? "Creating..." : "Create account"}</button>
       </form>
       <p className="mt-6 text-center text-sm text-slate-500">Already have an account? <Link to="/login" className="font-semibold text-slate-900 hover:underline">Log in</Link></p>
       </div>

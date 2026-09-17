@@ -11,6 +11,7 @@ export default function BatchAnalysis() {
   const [error, setError] = useState("");
   const [offersMap, setOffersMap] = useState({});
   const [stageMap, setStageMap] = useState({});
+  const [offerLoading, setOfferLoading] = useState({});
 
   const uploadFile = async (f) => {
     if (!f) return setError("Select a CSV file first");
@@ -30,11 +31,12 @@ export default function BatchAnalysis() {
   };
 
   const genOffers = async (row) => {
+    setOfferLoading((m) => ({ ...m, [row.row]: true }));
     try {
       const { data } = await api.post("/api/retention/offers", row.data);
       setOffersMap((m) => ({ ...m, [row.row]: data.offers }));
       setStageMap((m) => ({ ...m, [row.row]: 1 }));
-    } catch {}
+    } catch {} finally { setOfferLoading((m) => ({ ...m, [row.row]: false })); }
   };
 
   const advanceStage = (row) => setStageMap((m) => ({ ...m, [row]: Math.min(3, (m[row] || 1) + 1) }));
@@ -60,12 +62,12 @@ export default function BatchAnalysis() {
       </div>
       <div className="mt-4 flex gap-4 items-center">
         <input type="file" accept=".csv" onChange={(e) => setFile(e.target.files[0])} className="field" />
-        <button onClick={() => uploadFile(file)} disabled={loading} className="primary-button">{loading ? "Scoring..." : "Upload & Analyze"}</button>
+        <button onClick={() => uploadFile(file)} disabled={loading} className="primary-button hover:shadow-md hover:bg-blue-700 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2">{loading && <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />}{loading ? "Scoring..." : "Upload & Analyze"}</button>
       </div>
       <div className="mt-4">
         <p className="text-sm font-semibold">Or copy-paste CSV content</p>
         <textarea value={paste} onChange={(e) => setPaste(e.target.value)} placeholder="tenure,MonthlyCharges,TotalCharges,gender,Partner,Dependents,PhoneService,MultipleLines,InternetService,OnlineSecurity,OnlineBackup,DeviceProtection,TechSupport,StreamingTV,StreamingMovies,Contract,PaperlessBilling,PaymentMethod&#10;12,70.5,800,Female,Yes,No,Yes,No,Fiber optic,No,Yes,No,No,No,No,Month-to-month,Yes,Electronic check" className="field mt-2 h-24 font-mono text-xs" />
-        <button onClick={uploadPaste} disabled={loading} className="mt-2 rounded bg-slate-800 px-4 py-2 text-sm text-white">Paste & Analyze</button>
+        <button onClick={uploadPaste} disabled={loading} className="mt-2 rounded bg-slate-800 px-4 py-2 text-sm text-white hover:bg-slate-900 hover:shadow-md transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2">{loading && <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />}{loading ? "Analyzing..." : "Paste & Analyze"}</button>
       </div>
       <p className="mt-2 text-xs text-slate-500">Required columns: tenure, MonthlyCharges, TotalCharges, gender, Partner, Dependents, PhoneService, MultipleLines, InternetService, OnlineSecurity, OnlineBackup, DeviceProtection, TechSupport, StreamingTV, StreamingMovies, Contract, PaperlessBilling, PaymentMethod</p>
       {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
@@ -99,7 +101,7 @@ export default function BatchAnalysis() {
                 <td className="p-2 font-bold" style={{ color: r.risk_category?.color === "red" ? "#ef4444" : r.risk_category?.color === "yellow" ? "#eab308" : "#22c55e" }}>{r.probability}</td>
                 <td className="p-2"><span className={`rounded px-2 py-1 text-xs ${r.risk_category?.color === "red" ? "bg-red-100 text-red-700" : r.risk_category?.color === "yellow" ? "bg-yellow-100 text-yellow-700" : "bg-green-100 text-green-700"}`}>{r.risk_category?.label} - {r.risk_category?.detail}</span></td>
                 <td className="p-2">
-                  {!offersMap[r.row] ? <button onClick={() => genOffers(r)} className="rounded bg-blue-600 px-3 py-1 text-xs text-white">Generate 2 Offers (GenAI)</button> :
+                  {!offersMap[r.row] ? <button onClick={() => genOffers(r)} disabled={offerLoading[r.row]} className="rounded bg-blue-600 px-3 py-1 text-xs text-white hover:bg-blue-700 hover:shadow-md transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-1">{offerLoading[r.row] && <span className="h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent" />}{offerLoading[r.row] ? "Generating..." : "Generate 2 Offers (GenAI)"}</button> :
                     <div className="max-w-[360px]">
                       <p className="whitespace-pre-line text-xs">{offersMap[r.row]}</p>
                       <div className="mt-2 flex gap-2">

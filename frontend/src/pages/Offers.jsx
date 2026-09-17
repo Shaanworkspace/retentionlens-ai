@@ -15,7 +15,7 @@ export default function Offers() {
       <div className="mb-7"><p className="text-sm font-semibold uppercase tracking-wider text-slate-500">Retention workspace</p><h2 className="mt-2 text-3xl font-bold tracking-tight text-slate-900">Personalized offers</h2><p className="mt-2 text-slate-600">Generate practical retention recommendations from the customer profile.</p></div>
       <div className="grid gap-5 lg:grid-cols-[1fr_0.42fr]">
       <div className="panel p-6 sm:p-8">
-      <button onClick={run} disabled={loading} className="primary-button">{loading ? "Preparing recommendations..." : "Generate offers"}</button>
+       <button onClick={run} disabled={loading} className="primary-button hover:shadow-md hover:bg-blue-700 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2">{loading && <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />}{loading ? "Preparing recommendations..." : "Generate offers"}</button>
       {error && <p className="mt-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
       {data && <div className="mt-6 rounded-xl border border-slate-200 bg-slate-50 p-5 whitespace-pre-line"><p className="text-sm text-slate-500">Churn assessment</p><p className="mt-1 font-semibold text-slate-900">{data.churn_label} <span className="font-normal text-slate-600">({data.probability})</span></p><p className="mt-6 text-sm font-semibold text-slate-900">Recommended offers</p><p className="mt-2 leading-7 text-slate-700">{data.offers}</p><p className="mt-6 text-xs text-slate-500">History used: {data.history_used.join(" | ")}</p></div>}
       </div>
