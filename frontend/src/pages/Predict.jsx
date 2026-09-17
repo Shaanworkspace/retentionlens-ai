@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 import Breadcrumbs from "../components/Breadcrumbs";
-import { IconSpark, IconCheck, IconX } from "../components/icons";
 
 const defaults = {
   customer_name: "", tenure: 12, MonthlyCharges: 70.5, TotalCharges: 800.2, gender: "Male",
@@ -33,17 +33,12 @@ const fields = [
 const tierColor = (c) => c === "red" ? "#ef4444" : c === "yellow" ? "#eab308" : "#22c55e";
 
 export default function Predict() {
+  const navigate = useNavigate();
   const [form, setForm] = useState(defaults);
   const [result, setResult] = useState(null);
   const [history, setHistory] = useState([]);
-  const [openId, setOpenId] = useState(null);
-  const [offers, setOffers] = useState([]);
-  const [offerId, setOfferId] = useState(null);
-  const [offeredIdx, setOfferedIdx] = useState(null);
-  const [savedPct, setSavedPct] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [offerLoading, setOfferLoading] = useState(false);
   const change = (key, value) => setForm((current) => ({ ...current, [key]: value }));
 
   const loadHistory = () => api.get("/api/predict/history").then(({ data }) => setHistory(data)).catch(() => {});
@@ -61,40 +56,7 @@ export default function Predict() {
     } finally { setLoading(false); }
   };
 
-  const openCustomer = (h) => {
-    setOpenId(h.id); setOffers([]); setOfferId(h.id); setOfferedIdx(h.offered_index ?? null); setSavedPct(null);
-    setResult({ prediction_id: h.id, probability: h.probability, churn_label: h.churn_label, risk_category: h.probability >= 0.65 ? { id: 3, label: "Will Churn", detail: "Churning - Critical", color: "red", score: "65-100", action: "Immediate intervention" } : h.probability >= 0.4 ? { id: 2, label: "Tends to Churn", detail: "At Risk - Needs Attention", color: "yellow", score: "40-65", action: "Proactive outreach" } : { id: 1, label: "Will Stay", detail: "Not Churn - Positive", color: "green", score: "0-40", action: "Nurture & upsell" }, form: { customer_name: h.customer_name, tenure: h.tenure, Contract: h.contract } });
-    if (h.offers) {
-      try {
-        const parsed = JSON.parse(h.offers);
-        if (Array.isArray(parsed)) setOffers(parsed);
-      } catch { /* stored as text */ }
-    }
-  };
-
-  const genOffers = async () => {
-    if (!result) return;
-    setOfferLoading(true);
-    try {
-      const payload = { ...result.form, tenure: Number(result.form.tenure), MonthlyCharges: Number(result.form.MonthlyCharges), TotalCharges: Number(result.form.TotalCharges) };
-      const { data } = await api.post("/api/retention/offers", payload);
-      setOffers(data.offers && data.offers.length ? data.offers : [data.offers_text]);
-      if (data.prediction_id) setOfferId(data.prediction_id);
-      setOfferedIdx(null); setSavedPct(null);
-      loadHistory();
-    } catch { setError("Offer generation failed. Try again."); }
-    finally { setOfferLoading(false); }
-  };
-
-  const markOffered = async (idx) => {
-    if (!offerId) return;
-    try {
-      const { data } = await api.patch(`/api/predict/${offerId}/outcome`, { offered_index: idx });
-      setOfferedIdx(data.offered_index);
-      setSavedPct(data.retention_chance);
-      loadHistory();
-    } catch {}
-  };
+  const openCustomer = (h) => navigate(`/customer/${h.id}`);
 
   return <><Breadcrumbs current="Single Customer" />
     <div className="mb-7"><p className="eyebrow">Single customer</p><h1 className="page-title mt-1">Customer details</h1><p className="page-subtitle">Enter the telecom account profile. Scroll the form, then run prediction.</p></div>
@@ -116,7 +78,7 @@ export default function Predict() {
         {error && <p className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>}
         {result && <div className={`mt-6 rounded-xl border p-5 ${result.risk_category.color === "red" ? "border-red-200 bg-red-50" : result.risk_category.color === "yellow" ? "border-yellow-200 bg-yellow-50" : "border-green-200 bg-green-50"}`}>
           <p className="font-bold">{result.risk_category.label} · {result.probability}</p>
-          <button onClick={() => { setOpenId(result.prediction_id || "new"); setOffers([]); setOfferId(result.prediction_id); setOfferedIdx(null); }} className="mt-3 rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700">Open full dashboard →</button>
+          <button onClick={() => result.prediction_id && navigate(`/customer/${result.prediction_id}`)} disabled={!result.prediction_id} className="mt-3 rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700 disabled:opacity-60">Open full dashboard →</button>
         </div>}
       </section>
       <aside className="glass-card h-fit rounded-2xl p-6"><p className="eyebrow">History</p><h2 className="mt-2 text-xl font-semibold">Customers</h2>
@@ -127,31 +89,6 @@ export default function Predict() {
       </aside>
     </div>
 
-    {openId && result && <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 p-4 sm:p-8">
-      <div className="mx-auto max-w-4xl rounded-2xl bg-white p-6 shadow-2xl sm:p-8">
-        <div className="flex items-start justify-between"><div><p className="eyebrow">Customer dashboard</p><h2 className="mt-1 text-2xl font-bold">{result.form.customer_name || "Customer"}</h2><p className="text-sm text-slate-500">Tenure {result.form.tenure}m · {result.form.Contract}</p></div><button onClick={() => setOpenId(null)} className="rounded-lg p-2 hover:bg-slate-100" aria-label="Close dashboard"><IconX /></button></div>
-        <div className="mt-5 rounded-xl p-5 text-white" style={{ background: tierColor(result.risk_category.color) }}>
-          <p className="text-sm opacity-90">{result.risk_category.detail}</p>
-          <p className="text-3xl font-bold">{result.risk_category.label} · {Math.round(result.probability * 100)}%</p>
-          <p className="text-sm opacity-90">{result.risk_category.action}</p>
-        </div>
-        <div className="mt-5 grid gap-4 sm:grid-cols-2">
-          <div className="rounded-xl border p-4"><p className="text-sm font-semibold">Churn probability</p><div className="mt-2 h-3 rounded bg-slate-200"><div className="h-3 rounded" style={{ width: `${result.probability * 100}%`, background: tierColor(result.risk_category.color) }} /></div><p className="mt-1 text-xs text-slate-500">Model output on 7043-record training</p></div>
-          <div className="rounded-xl border p-4"><p className="text-sm font-semibold">Risk meter</p><div className="mt-2 flex gap-2">{[1, 2, 3].map((i) => <div key={i} className="h-3 flex-1 rounded" style={{ background: i <= result.risk_category.id ? tierColor(result.risk_category.color) : "#e2e8f0" }} />)}</div><p className="mt-1 text-xs text-slate-500">Tier {result.risk_category.id}/3 · Score {result.risk_category.score}</p></div>
-          <div className="rounded-xl border p-4"><p className="text-sm font-semibold">Tenure vs churn</p><div className="mt-2 h-3 rounded bg-gradient-to-r from-red-400 via-yellow-400 to-green-400" /><div className="relative h-4"><div className="absolute top-0 h-4 w-1 bg-slate-900" style={{ left: `${Math.min(100, (result.form.tenure / 72) * 100)}%` }} /></div><p className="text-xs text-slate-500">This customer at {result.form.tenure}m (0–12m churns 47%)</p></div>
-          <div className="rounded-xl border p-4"><p className="text-sm font-semibold">Contract risk</p><div className="mt-2 space-y-1 text-xs"><div className="flex justify-between"><span>Month-to-month</span><span className="font-bold text-red-600">42%</span></div><div className="h-2 rounded bg-slate-200"><div className="h-2 rounded bg-red-500" style={{ width: "42%" }} /></div><div className="flex justify-between"><span>One year</span><span className="font-bold text-yellow-600">11%</span></div><div className="h-2 rounded bg-slate-200"><div className="h-2 rounded bg-yellow-400" style={{ width: "11%" }} /></div><div className="flex justify-between"><span>Two year</span><span className="font-bold text-green-600">3%</span></div><div className="h-2 rounded bg-slate-200"><div className="h-2 rounded bg-green-500" style={{ width: "3%" }} /></div></div></div>
-        </div>
-        <div className="mt-6"><button onClick={genOffers} disabled={offerLoading} className="primary-button w-full py-3 hover:shadow-md disabled:opacity-60 flex items-center justify-center gap-2">{offerLoading && <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />}{offerLoading ? "Generating with Gemini..." : "Generate offers (GenAI)"}</button></div>
-        {offers.length > 0 && <div className="mt-4 grid gap-4 md:grid-cols-3">
-          {offers.map((offer, idx) => <div key={idx} className={`rounded-xl border p-4 ${offeredIdx === idx ? "border-green-400 bg-green-50" : "border-slate-200 bg-white"}`}>
-            <p className="flex items-center gap-2 text-sm font-bold"><IconSpark className="h-4 w-4 text-amber-500" />Offer {idx + 1}</p>
-            <p className="mt-2 text-sm leading-6 text-slate-700">{offer}</p>
-            <button onClick={() => markOffered(idx)} className={`mt-3 flex w-full items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold ${offeredIdx === idx ? "bg-green-600 text-white" : "bg-slate-900 text-white hover:bg-slate-700"}`}>{offeredIdx === idx ? <><IconCheck className="h-4 w-4" />Offered ✓</> : "Mark as Offered"}</button>
-          </div>)}
-        </div>}
-        {savedPct != null && <p className="mt-4 rounded-xl bg-green-50 p-3 text-sm font-semibold text-green-700">Saved for this customer. Retention chance now {savedPct}%.</p>}
-      </div>
-    </div>}
   </>;
 }
 

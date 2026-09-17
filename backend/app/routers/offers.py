@@ -1,10 +1,10 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.database import get_db, Prediction
 from app.schemas import PredictRequest
 from app.auth import get_current_user
 from app.ml.predictor import predict_one
-from app.retention_offers.generator import generate_offers
+from app.retention_offers.generator import generate_offers, GenAINotConfigured
 
 router = APIRouter(prefix="/api/retention", tags=["retention"])
 
@@ -12,9 +12,19 @@ router = APIRouter(prefix="/api/retention", tags=["retention"])
 def get_offers(req: PredictRequest, db: Session = Depends(get_db), user=Depends(get_current_user)):
     data = req.model_dump()
     model_data = {k: v for k, v in data.items() if k != "customer_name"}
-    label, proba, risk = predict_one(model_data)
+    try:
+        label, proba, risk = predict_one(model_data)
+    except FileNotFoundError as e:
+        raise HTTPException(status_code=500, detail=f"Model unavailable: {e}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Prediction failed: {e}")
     customer = {**data, "churn_prob": proba, "risk_label": risk["label"], "risk_detail": risk["detail"]}
-    result = generate_offers(customer, db)
+    try:
+        result = generate_offers(customer, db)
+    except GenAINotConfigured as e:
+        raise HTTPException(status_code=502, detail=str(e))
+    except RuntimeError as e:
+        raise HTTPException(status_code=502, detail=str(e))
     pred_id = None
     try:
         pred = Prediction(

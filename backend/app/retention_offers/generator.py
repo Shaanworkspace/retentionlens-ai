@@ -1,5 +1,6 @@
-"""GenAI offer generator - Gemini primary, Groq fallback, template last. Always min 3 offers."""
+"""GenAI offer generator - Gemini primary, Groq fallback. No fake data: raises if unconfigured."""
 import json
+import re
 import urllib.request
 from .prompts import build_prompt
 from app.config import GROQ_API_KEY
@@ -9,11 +10,8 @@ try:
 except Exception:
     GEMINI_API_KEY = ""
 
-FALLBACK_3 = (
-    "Offer 1: Switch to 1-year contract at 20% off - month-to-month churn is 42%, a longer term locks the saving in.\n"
-    "Offer 2: Free TechSupport + DeviceProtection for 6 months - cuts support friction for new fiber users.\n"
-    "Offer 3: Loyalty data bonus (50GB/month for 3 months) - rewards staying without changing the bill."
-)
+class GenAINotConfigured(Exception):
+    pass
 
 def call_gemini(prompt: str) -> str | None:
     if not GEMINI_API_KEY:
@@ -25,8 +23,8 @@ def call_gemini(prompt: str) -> str | None:
         with urllib.request.urlopen(req, timeout=25) as resp:
             out = json.loads(resp.read().decode())
         return out["candidates"][0]["content"]["parts"][0]["text"].strip()
-    except Exception:
-        return None
+    except Exception as e:
+        raise RuntimeError(f"Gemini call failed: {e}")
 
 def call_groq(prompt: str) -> str | None:
     if not GROQ_API_KEY:
@@ -41,19 +39,33 @@ def call_groq(prompt: str) -> str | None:
             max_tokens=300,
         )
         return resp.choices[0].message.content.strip()
-    except Exception:
-        return None
+    except Exception as e:
+        raise RuntimeError(f"Groq call failed: {e}")
+
+def clean_offer(line: str) -> str:
+    # strip repeated "Offer 1:" / "1." / "-" prefixes so UI heading never duplicates
+    cleaned = line.strip()
+    for _ in range(3):
+        cleaned = re.sub(r"^(offer\s*\d+\s*[:.\-\)]\s*|[\-\*\u2022]\s*|\d+\s*[.)]\s*)", "", cleaned, flags=re.IGNORECASE).strip()
+    return cleaned
 
 def split_offers(text: str):
     lines = [l.strip() for l in text.split("\n") if l.strip()]
-    offers = [l for l in lines if l.lower().startswith("offer")]
+    offers = [clean_offer(l) for l in lines if re.match(r"(?i)^offer\s*\d+", l.strip())]
     if len(offers) < 3:
-        offers = lines[:3] if len(lines) >= 3 else lines
-    while len(offers) < 3:
-        offers.append(FALLBACK_3.split("\n")[len(offers)])
+        rest = [clean_offer(l) for l in lines if clean_offer(l) and clean_offer(l) not in offers]
+        offers = (offers + rest)[:3]
+    offers = [o for o in offers if o]
+    if len(offers) < 3:
+        raise RuntimeError("GenAI returned fewer than 3 offers - try again")
     return offers[:3]
 
 def generate_offers(customer: dict, db=None):
+    if not GEMINI_API_KEY and not GROQ_API_KEY:
+        raise GenAINotConfigured("GenAI keys missing - set GEMINI_API_KEY or GROQ_API_KEY on the server")
     prompt = build_prompt(customer, None)
-    text = call_gemini(prompt) or call_groq(prompt) or FALLBACK_3
-    return {"offers": split_offers(text), "offers_text": text, "history_used": [], "prompt": prompt}
+    text = call_gemini(prompt) if GEMINI_API_KEY else call_groq(prompt)
+    if not text:
+        raise RuntimeError("GenAI returned empty response - try again")
+    offers = split_offers(text)
+    return {"offers": offers, "offers_text": "\n".join(f"Offer {i+1}: {o}" for i, o in enumerate(offers)), "history_used": [], "prompt": prompt}

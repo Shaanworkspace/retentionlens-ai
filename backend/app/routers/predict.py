@@ -70,6 +70,29 @@ def set_outcome(pred_id: int, payload: OutcomeUpdate, db: Session = Depends(get_
     offered_pct = round((1 - pred.probability) * 100, 1) if pred.outcome == "offered" else None
     return {"id": pred.id, "offered_index": pred.offered_index, "outcome": pred.outcome, "retention_chance": offered_pct}
 
+@router.get("/predict/{pred_id}")
+def get_one(pred_id: int, db: Session = Depends(get_db), user=Depends(get_current_user)):
+    r = db.query(Prediction).filter(Prediction.id == pred_id, Prediction.user_id == user.id).first()
+    if not r:
+        raise HTTPException(status_code=404, detail="Prediction not found")
+    return {
+        "id": r.id,
+        "customer_name": r.customer_name,
+        "tenure": r.tenure,
+        "monthly_charges": r.monthly_charges,
+        "total_charges": r.total_charges,
+        "contract": r.contract,
+        "internet_service": r.internet_service,
+        "payment_method": r.payment_method,
+        "churn": r.churn,
+        "churn_label": r.churn_label,
+        "probability": r.probability,
+        "offers": r.offers,
+        "offered_index": r.offered_index,
+        "outcome": r.outcome,
+        "created_at": r.created_at.isoformat() if r.created_at else None,
+    }
+
 @router.get("/health")
 def health():
     return {"status": "ok"}

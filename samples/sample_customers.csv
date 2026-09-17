@@ -1,0 +1,6 @@
+customer_name,tenure,MonthlyCharges,TotalCharges,gender,Partner,Dependents,PhoneService,MultipleLines,InternetService,OnlineSecurity,OnlineBackup,DeviceProtection,TechSupport,StreamingTV,StreamingMovies,Contract,PaperlessBilling,PaymentMethod
+Rahul Verma,5,85.5,410.2,Male,No,No,Yes,No,Fiber optic,No,No,No,No,Yes,Yes,Month-to-month,Yes,Electronic check
+Priya Sharma,48,62.3,2980.5,Female,Yes,Yes,Yes,Yes,DSL,Yes,Yes,Yes,Yes,No,No,Two year,No,Credit card (automatic)
+Amit Patel,14,74.9,1050.0,Male,Yes,No,Yes,Yes,Fiber optic,No,Yes,No,No,Yes,No,Month-to-month,Yes,Electronic check
+Sneha Iyer,30,55.0,1650.75,Female,No,No,Yes,No,DSL,Yes,No,Yes,No,No,No,One year,Yes,Bank transfer (automatic)
+Vikram Singh,2,95.1,190.2,Male,No,No,Yes,Yes,Fiber optic,No,No,No,No,Yes,Yes,Month-to-month,Yes,Electronic check
