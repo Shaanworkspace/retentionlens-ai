@@ -47,6 +47,34 @@ class Prediction(Base):
     outcome = Column(String(20), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow, index=True)
 
+class BatchRun(Base):
+    __tablename__ = "batch_runs"
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    name = Column(String(120), nullable=False)
+    filename = Column(String(255), nullable=True)
+    source = Column(String(20), nullable=False, default="upload")
+    total = Column(Integer, nullable=False, default=0)
+    churn_count = Column(Integer, nullable=False, default=0)
+    tends_count = Column(Integer, nullable=False, default=0)
+    stay_count = Column(Integer, nullable=False, default=0)
+    churn_rate = Column(Float, nullable=False, default=0.0)
+    created_at = Column(DateTime, default=datetime.utcnow, index=True)
+
+class BatchItem(Base):
+    __tablename__ = "batch_items"
+    id = Column(Integer, primary_key=True, index=True)
+    batch_id = Column(Integer, ForeignKey("batch_runs.id"), nullable=False, index=True)
+    row_no = Column(Integer, nullable=False)
+    customer_name = Column(String(120), nullable=True)
+    churn = Column(Integer, nullable=False)
+    churn_label = Column(String(10))
+    probability = Column(Float, nullable=False)
+    risk_id = Column(Integer, nullable=False)
+    risk_label = Column(String(50))
+    risk_detail = Column(String(120))
+    data_json = Column(Text)
+
 # MySQL needs explicit create after all models defined (with retry for Aiven cold start)
 try:
     Base.metadata.create_all(bind=engine)

@@ -10,6 +10,8 @@ import Predict from "./pages/Predict";
 import Offers from "./pages/Offers";
 import BatchAnalysis from "./pages/BatchAnalysis";
 import CustomerDetail from "./pages/CustomerDetail";
+import BatchHistory from "./pages/BatchHistory";
+import BatchResult from "./pages/BatchResult";
 import Profile from "./pages/Profile";
 import Sidebar from "./components/Sidebar";
 import Customers from "./pages/Customers";
@@ -42,6 +44,8 @@ export default function App() {
           <Route path="/predictions" element={<PrivatePage><Predictions /></PrivatePage>} />
           <Route path="/offers" element={<PrivatePage><Offers /></PrivatePage>} />
           <Route path="/batch" element={<PrivatePage><BatchAnalysis /></PrivatePage>} />
+          <Route path="/batches" element={<PrivatePage><BatchHistory /></PrivatePage>} />
+          <Route path="/batch/:id" element={<PrivatePage><BatchResult /></PrivatePage>} />
           <Route path="/customer/:id" element={<PrivatePage><CustomerDetail /></PrivatePage>} />
           <Route path="/profile" element={<PrivatePage><Profile /></PrivatePage>} />
           <Route path="/customers" element={<PrivatePage><Customers /></PrivatePage>} />

@@ -1,12 +1,13 @@
 import { NavLink } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useUI } from "../context/UIContext";
-import { IconHome, IconUser, IconUsers, IconTag, IconChart, IconSettings, IconX } from "./icons";
+import { IconHome, IconUser, IconUsers, IconTag, IconChart, IconSettings, IconHistory, IconX } from "./icons";
 
 const items = [
   ["/dashboard", "Dashboard", IconHome],
   ["/predict", "Single Customer", IconUser],
   ["/batch", "Batch Customers", IconUsers],
+  ["/batches", "Batch History", IconHistory],
   ["/offers", "Offers", IconTag],
   ["/analytics", "Analytics", IconChart],
   ["/profile", "Profile Settings", IconSettings],

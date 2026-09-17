@@ -17,3 +17,4 @@ export const IconSpark = svg(<><path d="M12 3l1.9 5.8L19.7 10l-5.8 1.9L12 17.7l-
 export const IconHome = svg(<><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></>);
 export const IconLogout = svg(<><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" /></>);
 export const IconBuilding = svg(<><rect x="4" y="2" width="16" height="20" rx="2" /><path d="M9 22v-4h6v4" /><line x1="8" y1="6" x2="8.01" y2="6" /><line x1="16" y1="6" x2="16.01" y2="6" /><line x1="12" y1="6" x2="12.01" y2="6" /><line x1="8" y1="10" x2="8.01" y2="10" /><line x1="16" y1="10" x2="16.01" y2="10" /><line x1="12" y1="10" x2="12.01" y2="10" /></>);
+export const IconHistory = svg(<><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /><path d="M3 3v5h5" /><path d="M12 7v5l4 2" /></>);
