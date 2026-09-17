@@ -1,9 +1,8 @@
-"""07 - Model: compare LogisticRegression, RandomForest, XGBoost in Pipeline."""
+"""07 - Model: compare LogisticRegression, RandomForest with SMOTE."""
 import pandas as pd
 from sklearn.pipeline import Pipeline
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
-from xgboost import XGBClassifier
 from sklearn.model_selection import cross_val_score
 from config import RANDOM_STATE
 from preprocessing import build_preprocessor
@@ -11,7 +10,6 @@ from preprocessing import build_preprocessor
 MODELS = {
     "logreg": LogisticRegression(max_iter=1000),
     "rf": RandomForestClassifier(n_estimators=120, random_state=RANDOM_STATE),
-    "xgb": XGBClassifier(n_estimators=120, max_depth=5, learning_rate=0.1, eval_metric="logloss", random_state=RANDOM_STATE),
 }
 
 def build_pipeline(model_name: str) -> Pipeline:

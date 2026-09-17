@@ -4,7 +4,7 @@ from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from config import TARGET
 
-NUMERIC = ["tenure", "MonthlyCharges", "TotalCharges"]
+NUMERIC = ["tenure", "MonthlyCharges", "TotalCharges", "AvgMonthlySpend", "ServiceCount", "SupportServiceCount", "IsMonthToMonth"]
 CATEGORICAL = [
     "gender", "Partner", "Dependents", "PhoneService", "MultipleLines",
     "InternetService", "OnlineSecurity", "OnlineBackup", "DeviceProtection",

@@ -1,0 +1,97 @@
+model,feature,importance,rank
+rf,tenure,0.102894,1
+rf,TotalCharges,0.092488,2
+rf,AvgMonthlySpend,0.081548,3
+rf,MonthlyCharges,0.079998,4
+rf,IsMonthToMonth,0.051456,5
+rf,PaymentMethod_Electronic check,0.049845,6
+rf,Contract_Month-to-month,0.045778,7
+rf,TechSupport_No,0.036707,8
+rf,OnlineSecurity_No,0.034425,9
+rf,Contract_Two year,0.025355,10
+rf,SupportServiceCount,0.024949,11
+rf,InternetService_Fiber optic,0.023167,12
+rf,ServiceCount,0.022159,13
+rf,PaperlessBilling_No,0.01702,14
+rf,PaperlessBilling_Yes,0.016637,15
+rf,OnlineBackup_No,0.0155,16
+rf,gender_Male,0.014601,17
+rf,gender_Female,0.01438,18
+rf,Partner_No,0.01433,19
+rf,Partner_Yes,0.014113,20
+rf,OnlineSecurity_Yes,0.013676,21
+rf,PaymentMethod_Credit card (automatic),0.012913,22
+rf,Dependents_Yes,0.012441,23
+rf,PaymentMethod_Bank transfer (automatic),0.012421,24
+rf,Dependents_No,0.01224,25
+rf,MultipleLines_No,0.012037,26
+rf,Contract_One year,0.011743,27
+rf,MultipleLines_Yes,0.011676,28
+rf,PaymentMethod_Mailed check,0.01125,29
+rf,OnlineBackup_Yes,0.009986,30
+rf,InternetService_DSL,0.009532,31
+rf,TechSupport_Yes,0.009153,32
+rf,DeviceProtection_No,0.008925,33
+rf,StreamingTV_No,0.008883,34
+rf,StreamingTV_Yes,0.008508,35
+rf,StreamingMovies_No,0.008485,36
+rf,StreamingMovies_Yes,0.008231,37
+rf,DeviceProtection_Yes,0.008212,38
+rf,DeviceProtection_No internet service,0.004353,39
+rf,TechSupport_No internet service,0.004075,40
+rf,StreamingMovies_No internet service,0.003813,41
+rf,InternetService_No,0.003705,42
+rf,StreamingTV_No internet service,0.003544,43
+rf,OnlineBackup_No internet service,0.003527,44
+rf,PhoneService_Yes,0.002521,45
+rf,MultipleLines_No phone service,0.002439,46
+rf,PhoneService_No,0.00233,47
+rf,OnlineSecurity_No internet service,0.002029,48
+logreg,tenure,1.50258,1
+logreg,TotalCharges,0.786343,2
+logreg,InternetService_Fiber optic,0.651684,3
+logreg,InternetService_DSL,0.608305,4
+logreg,Contract_Two year,0.526029,5
+logreg,MonthlyCharges,0.480699,6
+logreg,IsMonthToMonth,0.387839,7
+logreg,PaymentMethod_Electronic check,0.321479,8
+logreg,PaperlessBilling_No,0.288589,9
+logreg,Dependents_Yes,0.262512,10
+logreg,MultipleLines_No,0.261704,11
+logreg,Contract_One year,0.254591,12
+logreg,InternetService_No,0.216896,13
+logreg,OnlineSecurity_No internet service,0.216896,14
+logreg,OnlineBackup_No internet service,0.216896,15
+logreg,DeviceProtection_No internet service,0.216896,16
+logreg,TechSupport_No internet service,0.216896,17
+logreg,StreamingTV_No internet service,0.216896,18
+logreg,StreamingMovies_No internet service,0.216896,19
+logreg,OnlineSecurity_No,0.21536,20
+logreg,PaymentMethod_Credit card (automatic),0.208925,21
+logreg,ServiceCount,0.198693,22
+logreg,PaymentMethod_Bank transfer (automatic),0.185461,23
+logreg,TechSupport_No,0.183826,24
+logreg,AvgMonthlySpend,0.183213,25
+logreg,OnlineSecurity_Yes,0.171981,26
+logreg,StreamingMovies_Yes,0.158235,27
+logreg,StreamingTV_Yes,0.150289,28
+logreg,TechSupport_Yes,0.140447,29
+logreg,PhoneService_Yes,0.138281,30
+logreg,MultipleLines_Yes,0.123422,31
+logreg,PaperlessBilling_Yes,0.115072,32
+logreg,StreamingMovies_No,0.114856,33
+logreg,StreamingTV_No,0.10691,34
+logreg,PaymentMethod_Mailed check,0.100611,35
+logreg,Contract_Month-to-month,0.09792,36
+logreg,gender_Female,0.0905,37
+logreg,Dependents_No,0.088994,38
+logreg,Partner_Yes,0.087217,39
+logreg,Partner_No,0.086301,40
+logreg,gender_Male,0.083018,41
+logreg,OnlineBackup_No,0.077531,42
+logreg,SupportServiceCount,0.059451,43
+logreg,DeviceProtection_Yes,0.050322,44
+logreg,PhoneService_No,0.035236,45
+logreg,MultipleLines_No phone service,0.035236,46
+logreg,OnlineBackup_Yes,0.034152,47
+logreg,DeviceProtection_No,0.006944,48

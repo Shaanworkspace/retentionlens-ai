@@ -8,9 +8,9 @@ sqlalchemy
 pydantic
 pydantic[email]
 scikit-learn
-xgboost
 pandas
 python-dotenv
 email-validator
 pymysql
 cryptography
+imbalanced-learn
