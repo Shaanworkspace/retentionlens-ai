@@ -54,23 +54,25 @@ export default function BatchAnalysis() {
     willChurn: result.results.filter(r => r.risk_category?.id === 3).length,
   } : null;
 
-  return <><Breadcrumbs current="Batch Analysis" /><p className="eyebrow">Bulk operations</p><h1 className="page-title mt-1">Batch customer analysis</h1><p className="page-subtitle">Upload CSV for high-volume scoring (up to 5000 rows, 20MB). Copy-paste, drag-drop, or upload - only CSV now, other files later. Get 3 segments: Not Churn / Tends to Churn / Will Churn.</p>
-    <div className="mt-6 panel p-6" onDragOver={(e) => { e.preventDefault(); setDragOver(true); }} onDragLeave={() => setDragOver(false)} onDrop={(e) => { e.preventDefault(); setDragOver(false); const f = e.dataTransfer.files[0]; if (f) { setFile(f); uploadFile(f); } }}>
-      <div className={`rounded-lg border-2 border-dashed p-6 text-center ${dragOver ? "border-blue-400 bg-blue-50" : "border-slate-300"}`}>
-        <p className="font-semibold">Drag & drop CSV here</p>
-        <p className="text-xs text-slate-500">or use file picker / paste below</p>
+  return <><Breadcrumbs current="Batch Customers" /><p className="eyebrow">Batch customers</p><h1 className="page-title mt-1">Score customers in bulk</h1><p className="page-subtitle">Three easy ways to send us your customer list — pick any one. We accept CSV files up to 5000 rows (20MB) and split every customer into Not Churn, Tends to Churn, or Will Churn.</p>
+    <div className="mt-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8" onDragOver={(e) => { e.preventDefault(); setDragOver(true); }} onDragLeave={() => setDragOver(false)} onDrop={(e) => { e.preventDefault(); setDragOver(false); const f = e.dataTransfer.files[0]; if (f) { setFile(f); uploadFile(f); } }}>
+      <h2 className="text-lg font-bold text-slate-900">Option 1 · Drag and drop your file</h2>
+      <div className={`mt-3 rounded-2xl border-2 border-dashed p-8 text-center transition ${dragOver ? "border-blue-500 bg-blue-50" : "border-slate-300 bg-slate-50"}`}>
+        <p className="text-lg font-semibold text-slate-800">Drop your CSV file here</p>
+        <p className="mt-1 text-sm text-slate-500">We will start scoring the moment you drop it. Only .csv files for now.</p>
       </div>
-      <div className="mt-4 flex gap-4 items-center">
+      <h2 className="mt-8 text-lg font-bold text-slate-900">Option 2 · Choose a file from your computer</h2>
+      <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center">
         <input type="file" accept=".csv" onChange={(e) => setFile(e.target.files[0])} className="field" />
-        <button onClick={() => uploadFile(file)} disabled={loading} className="primary-button hover:shadow-md hover:bg-blue-700 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2">{loading && <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />}{loading ? "Scoring..." : "Upload & Analyze"}</button>
+        <button onClick={() => uploadFile(file)} disabled={loading} className="primary-button shrink-0 hover:shadow-md hover:bg-blue-700 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2">{loading && <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />}{loading ? "Scoring your file..." : "Upload and analyze"}</button>
       </div>
-      <div className="mt-4">
-        <p className="text-sm font-semibold">Or copy-paste CSV content</p>
-        <textarea value={paste} onChange={(e) => setPaste(e.target.value)} placeholder="tenure,MonthlyCharges,TotalCharges,gender,Partner,Dependents,PhoneService,MultipleLines,InternetService,OnlineSecurity,OnlineBackup,DeviceProtection,TechSupport,StreamingTV,StreamingMovies,Contract,PaperlessBilling,PaymentMethod&#10;12,70.5,800,Female,Yes,No,Yes,No,Fiber optic,No,Yes,No,No,No,No,Month-to-month,Yes,Electronic check" className="field mt-2 h-24 font-mono text-xs" />
-        <button onClick={uploadPaste} disabled={loading} className="mt-2 rounded bg-slate-800 px-4 py-2 text-sm text-white hover:bg-slate-900 hover:shadow-md transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2">{loading && <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />}{loading ? "Analyzing..." : "Paste & Analyze"}</button>
-      </div>
-      <p className="mt-2 text-xs text-slate-500">Required columns: tenure, MonthlyCharges, TotalCharges, gender, Partner, Dependents, PhoneService, MultipleLines, InternetService, OnlineSecurity, OnlineBackup, DeviceProtection, TechSupport, StreamingTV, StreamingMovies, Contract, PaperlessBilling, PaymentMethod</p>
-      {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
+      {file && <p className="mt-2 text-xs text-slate-500">Selected: {file.name}</p>}
+      <h2 className="mt-8 text-lg font-bold text-slate-900">Option 3 · Paste rows directly</h2>
+      <p className="mt-1 text-sm text-slate-500">Copy rows from Excel or Sheets (with the header row) and paste them below.</p>
+      <textarea value={paste} onChange={(e) => setPaste(e.target.value)} placeholder={"tenure,MonthlyCharges,TotalCharges,gender,Partner,Dependents,PhoneService,MultipleLines,InternetService,OnlineSecurity,OnlineBackup,DeviceProtection,TechSupport,StreamingTV,StreamingMovies,Contract,PaperlessBilling,PaymentMethod\n12,70.5,800,Female,Yes,No,Yes,No,Fiber optic,No,Yes,No,No,No,No,Month-to-month,Yes,Electronic check"} className="field mt-3 h-28 font-mono text-xs" />
+      <button onClick={uploadPaste} disabled={loading} className="mt-3 rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-slate-700 hover:shadow-md transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2">{loading && <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />}{loading ? "Scoring pasted rows..." : "Analyze pasted rows"}</button>
+      <p className="mt-4 rounded-xl bg-slate-50 p-3 text-xs leading-5 text-slate-500">Your file needs these columns: tenure, MonthlyCharges, TotalCharges, gender, Partner, Dependents, PhoneService, MultipleLines, InternetService, OnlineSecurity, OnlineBackup, DeviceProtection, TechSupport, StreamingTV, StreamingMovies, Contract, PaperlessBilling, PaymentMethod.</p>
+      {error && <p className="mt-3 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>}
     </div>
 
     {result && <>

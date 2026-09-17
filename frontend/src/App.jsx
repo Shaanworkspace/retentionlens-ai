@@ -18,10 +18,11 @@ import HealthScores from "./pages/HealthScores";
 import Data from "./pages/Data";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
-import { UIProvider } from "./context/UIContext";
+import { UIProvider, useUI } from "./context/UIContext";
 
 function PrivateLayout({ children }) {
-  return <div className="flex min-h-[calc(100vh-4rem)]"><Sidebar /><main className="glass-main min-w-0 flex-1"><div className="mx-auto max-w-7xl p-6">{children}</div></main></div>;
+  const { sidebarOpen } = useUI();
+  return <div className="min-h-screen"><Sidebar /><main className={`glass-main min-w-0 transition-all duration-300 ease-in-out ${sidebarOpen ? "ml-64" : "ml-0"}`}><div className="mx-auto max-w-7xl p-6">{children}</div></main></div>;
 }
 
 function PrivatePage({ children }) { return <PrivateRoute><PrivateLayout>{children}</PrivateLayout></PrivateRoute>; }

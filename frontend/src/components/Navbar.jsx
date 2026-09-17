@@ -12,7 +12,7 @@ export default function Navbar() {
 
   return <header className="sticky top-0 z-30 px-4 pt-3 sm:px-6"><div className="glass-header mx-auto flex h-16 max-w-6xl items-center justify-between rounded-2xl px-4 text-white sm:rounded-full sm:px-6">
     <div className="flex items-center gap-2">
-      {isAuth && <button onClick={toggleSidebar} className="glass-control rounded-lg p-2 hover:bg-white/20" aria-label="Toggle dashboard menu"><IconMenu /></button>}
+      {isAuth && <button onClick={toggleSidebar} className="glass-control rounded-full border border-white/25 p-2.5 hover:bg-white/20 hover:shadow-md" aria-label="Toggle dashboard menu"><IconMenu /></button>}
       <Link to="/" className="flex items-center gap-2 text-lg font-bold tracking-tight"><span className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-500 text-sm shadow-lg shadow-blue-900/30">R</span>RetentionLens AI</Link>
     </div>
     <div className="flex items-center gap-3">{isAuth ? <>
