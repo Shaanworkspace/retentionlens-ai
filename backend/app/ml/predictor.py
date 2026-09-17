@@ -21,17 +21,13 @@ def get_model():
     return _model
 
 def get_risk_category(proba: float):
-    # 5-tier based on Inkeep + Simon + ChurnZero research: 81-100 Thriving, 61-80 Healthy, 41-60 At-Risk, 0-40 Critical
-    # Adapted to churn probability (inverse of health)
-    if proba < 0.20:
-        return {"id": 1, "label": "Loyal", "detail": "Not Tends to Churn", "color": "green", "score": "81-100", "action": "Nurture & upsell"}
+    # 3-tier research-backed: Simon 0-50 Low / 51-75 Medium / 76-100 High + ChurnZero Green 0-33 / Yellow 34-67 / Red 68-100
+    # Combined to 3 for telecom: Will Stay / Tends to Churn / Will Churn
     if proba < 0.40:
-        return {"id": 2, "label": "Stable", "detail": "Low Tendency to Churn", "color": "green", "score": "61-80", "action": "Standard engagement"}
-    if proba < 0.55:
-        return {"id": 3, "label": "At Risk", "detail": "Tends to Churn", "color": "yellow", "score": "41-60", "action": "Proactive outreach"}
-    if proba < 0.75:
-        return {"id": 4, "label": "High Risk", "detail": "Strong Tendency to Churn", "color": "orange", "score": "20-40", "action": "Retention offer"}
-    return {"id": 5, "label": "Critical", "detail": "Will Churn", "color": "red", "score": "0-20", "action": "Immediate intervention"}
+        return {"id": 1, "label": "Will Stay", "detail": "Not Churn - Positive", "color": "green", "score": "0-40", "action": "Nurture & upsell"}
+    if proba < 0.65:
+        return {"id": 2, "label": "Tends to Churn", "detail": "At Risk - Needs Attention", "color": "yellow", "score": "40-65", "action": "Proactive outreach"}
+    return {"id": 3, "label": "Will Churn", "detail": "Churning - Critical", "color": "red", "score": "65-100", "action": "Immediate intervention"}
 
 def predict_one(data: dict):
     model = get_model()

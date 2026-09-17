@@ -1,5 +1,4 @@
-"""GenAI offer generator with a deterministic local fallback."""
-from .history import get_similar_history
+"""GenAI offer generator - no history, pure telecom stats + customer profile."""
 from .prompts import build_prompt
 from app.config import GROQ_API_KEY
 
@@ -24,7 +23,6 @@ def call_groq(prompt: str) -> str:
         return "Offer 1: 1-year contract at 20% off for stability.\nOffer 2: Free TechSupport for 6 months to improve service confidence."
 
 def generate_offers(customer: dict, db=None):
-    history = get_similar_history(db, customer.get("Contract", ""), customer.get("InternetService", ""))
-    prompt = build_prompt(customer, history)
+    prompt = build_prompt(customer, None)
     text = call_groq(prompt)
-    return {"offers_text": text, "history_used": history, "prompt": prompt}
+    return {"offers_text": text, "history_used": [], "prompt": prompt}

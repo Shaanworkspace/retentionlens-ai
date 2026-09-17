@@ -6,22 +6,18 @@ TELECOM_STATS = """Telecom churn insights (IBM 7043 records):
 """
 
 SYSTEM_PROMPT = """You are a telecom retention specialist for Indian telecom companies.
-Given a new customer and past success cases, suggest exactly 2 retention offers.
-Each offer must have: title, discount/benefit, and why it will work.
-Keep total under 70 words. No generic advice - be specific to telecom.
+Given a new customer profile and telecom churn stats, suggest exactly 2 retention offers.
+Each offer must have: title, discount/benefit, and why it will work for this risk tier.
+Keep total under 70 words. No generic advice - be specific to telecom and risk tier.
 """
 
-def build_prompt(customer, history):
-    if history:
-        context = "\n".join([f"- {h}" for h in history])
-        history_block = f"Past retained customers (similar segment):\n{context}"
-    else:
-        history_block = "Past history: No prior retained cases for this exact segment. Use telecom stats."
-
+def build_prompt(customer, history=None):
+    # No history mode - pure GenAI with telecom stats
     customer_block = f"""New customer:
 - Contract: {customer['Contract']}, Internet: {customer['InternetService']}, Tenure: {customer['tenure']} months
 - Monthly: ₹{customer['MonthlyCharges']}, Total: ₹{customer['TotalCharges']}
-- Payment: {customer['PaymentMethod']}, Churn risk: {customer['churn_prob']:.0%}
+- Payment: {customer['PaymentMethod']}, Churn risk: {customer['churn_prob']:.0%} ({customer.get('risk_label','')})
+- Risk Tier: {customer.get('risk_label','')} - {customer.get('risk_detail','')}
 """
 
-    return f"{SYSTEM_PROMPT}\n{TELECOM_STATS}\n{history_block}\n\n{customer_block}\nGive 2 offers now:"
+    return f"{SYSTEM_PROMPT}\n{TELECOM_STATS}\n{customer_block}\nGive 2 offers now:"
