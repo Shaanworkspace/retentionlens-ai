@@ -1,0 +1,5 @@
+{
+  "threshold": 0.5,
+  "model": "logreg",
+  "best_model_f1": 0.6121
+}
