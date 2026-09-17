@@ -4,6 +4,42 @@ import Breadcrumbs from "../components/Breadcrumbs";
 import api from "../services/api";
 import { fmtDate } from "./BatchHistory";
 
+const pctOf = (a, b) => b ? Math.round((a / b) * 100) : 0;
+function churnRate(rows) {
+  const c = rows.filter((r) => r.churn === 1).length;
+  return { count: c, total: rows.length, rate: pctOf(c, rows.length) };
+}
+function byContract(rows) {
+  const groups = {};
+  rows.forEach((r) => { const k = r.data?.Contract || "Unknown"; (groups[k] = groups[k] || []).push(r); });
+  return Object.entries(groups).map(([k, v]) => ({ label: k, ...churnRate(v) }));
+}
+function byTenure(rows) {
+  const buckets = { "0-12m": [], "12-24m": [], "24-48m": [], "48m+": [] };
+  rows.forEach((r) => {
+    const t = Number(r.data?.tenure || 0);
+    (t <= 12 ? buckets["0-12m"] : t <= 24 ? buckets["12-24m"] : t <= 48 ? buckets["24-48m"] : buckets["48m+"]).push(r);
+  });
+  return Object.entries(buckets).map(([k, v]) => ({ label: k, ...churnRate(v) }));
+}
+function byInternet(rows) {
+  const groups = {};
+  rows.forEach((r) => { const k = r.data?.InternetService || "Unknown"; (groups[k] = groups[k] || []).push(r); });
+  return Object.entries(groups).map(([k, v]) => ({ label: k, ...churnRate(v) }));
+}
+function byBuckets(rows) {
+  const buckets = { "0-40%": [], "40-65%": [], "65-85%": [], "85-100%": [] };
+  rows.forEach((r) => {
+    const p = Number(r.probability || 0);
+    (p < 0.4 ? buckets["0-40%"] : p < 0.65 ? buckets["40-65%"] : p < 0.85 ? buckets["65-85%"] : buckets["85-100%"]).push(r);
+  });
+  return Object.entries(buckets).map(([k, v]) => ({ label: k, count: v.length, total: rows.length, rate: pctOf(v.length, rows.length) }));
+}
+function Bars({ rows }) {
+  const max = Math.max(1, ...rows.map((r) => r.rate));
+  return <div className="mt-3 space-y-2">{rows.map((r) => <div key={r.label}><div className="flex justify-between text-xs"><span className="font-medium text-slate-700">{r.label} ({r.total})</span><span className="font-bold" style={{ color: r.rate >= 40 ? "#ef4444" : r.rate >= 20 ? "#eab308" : "#22c55e" }}>{r.rate}% churn</span></div><div className="mt-1 h-2 rounded bg-slate-100"><div className="h-2 rounded" style={{ width: `${(r.rate / max) * 100}%`, background: r.rate >= 40 ? "#ef4444" : r.rate >= 20 ? "#eab308" : "#22c55e" }} /></div></div>)}</div>;
+}
+
 export default function BatchResult() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -45,6 +81,15 @@ export default function BatchResult() {
         <div className="bg-red-500" style={{ width: `${pct(run.churn_count)}%` }} title={`Churn ${pct(run.churn_count)}%`} />
       </div>
       <p className="mt-2 text-xs text-slate-500">Green = Will Stay · Yellow = Tends to Churn · Red = Will Churn · Churn rate {run.churn_rate}%{run.truncated_items ? " · showing first 2000 rows" : ""}</p>
+    </div>
+
+    <h2 className="mt-8 text-xl font-bold text-slate-900">How this batch churns</h2>
+    <p className="mt-1 text-sm text-slate-500">Simple reads from this file — same numbers the model saw.</p>
+    <div className="mt-4 grid gap-4 sm:grid-cols-2">
+      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><p className="text-sm font-semibold text-slate-600">Churn by contract</p><Bars rows={byContract(run.results)} /></div>
+      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><p className="text-sm font-semibold text-slate-600">Churn by tenure</p><Bars rows={byTenure(run.results)} /></div>
+      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><p className="text-sm font-semibold text-slate-600">Churn by internet</p><Bars rows={byInternet(run.results)} /></div>
+      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><p className="text-sm font-semibold text-slate-600">Risk probability buckets</p><Bars rows={byBuckets(run.results)} /></div>
     </div>
 
     <div className="mt-6 flex justify-end"><button onClick={() => {
