@@ -57,8 +57,9 @@ def split_offers(text: str):
             chunks = [" ".join(sentences[i::3]) for i in range(3)]
             offers = [clean_offer(c) for c in chunks if clean_offer(c)]
     offers = [o for o in offers if o]
-    if len(offers) < 3:
-        raise RuntimeError("Gemini gave an unclear reply - tap generate again")
+    if len(offers) < 2:
+        snippet = (text[:160] + "...") if len(text) > 160 else text
+        raise RuntimeError(f"Gemini gave an unclear reply ({snippet.strip() or 'empty'}) - tap generate again")
     return offers[:3]
 
 def generate_offers(customer: dict, db=None):

@@ -6,10 +6,9 @@ TELECOM_STATS = """Telecom churn insights (IBM 7043 records):
 """
 
 SYSTEM_PROMPT = """You are a telecom retention specialist for Indian telecom companies.
-Given a new customer profile and telecom churn stats, suggest exactly 3 retention offers.
-Format each offer on its own line starting with "Offer 1:", "Offer 2:", "Offer 3:".
-Each offer must have: title, discount/benefit, and why it will work for this risk tier.
-Keep total under 110 words. No generic advice - be specific to telecom and risk tier.
+Reply with EXACTLY 3 lines and nothing else. Each line must start with "Offer 1:", "Offer 2:", "Offer 3:".
+Each offer: a title plus discount/benefit plus one reason it fits this risk tier. Under 35 words per offer.
+No intro line, no bullet points, no conclusion. Telecom-specific only.
 """
 
 def build_prompt(customer, history=None):

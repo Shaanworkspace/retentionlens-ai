@@ -25,7 +25,7 @@ export default function CustomerBoard({ title, subtitle, backTo, backLabel, prob
     </div>
 
     <h2 className="mt-8 text-xl font-bold text-slate-900">Retention offers</h2>
-    <p className="mt-1 text-sm text-slate-500">Tap generate — a live GenAI request runs and at least 3 offers appear. Click any offer to mark it offered.</p>
+    <p className="mt-1 text-sm text-slate-500">Tap generate — a live GenAI request runs and 2 to 3 offers appear. Click any offer to mark it offered.</p>
     <button onClick={onGenerate} disabled={offerLoading} className="primary-button mt-4 hover:shadow-md disabled:opacity-60 flex items-center justify-center gap-2">{offerLoading && <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />}{offerLoading ? "Asking GenAI..." : "Generate offers with GenAI"}</button>
     {offerError && <p className="mt-3 rounded-xl bg-red-50 p-3 text-sm text-red-700">{offerError}</p>}
     {offers.length > 0 && <div className="mt-4 grid gap-4 md:grid-cols-3">
