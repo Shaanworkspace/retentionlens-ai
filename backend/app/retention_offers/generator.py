@@ -18,7 +18,7 @@ def call_gemini(prompt: str) -> str:
     for model in MODELS:
         try:
             url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={GEMINI_API_KEY}"
-            body = json.dumps({"contents": [{"parts": [{"text": prompt}]}], "generationConfig": {"temperature": 0.6, "maxOutputTokens": 300}}).encode()
+            body = json.dumps({"contents": [{"parts": [{"text": prompt}]}], "generationConfig": {"temperature": 0.6, "maxOutputTokens": 600}}).encode()
             req = urllib.request.Request(url, data=body, headers={"Content-Type": "application/json"}, method="POST")
             with urllib.request.urlopen(req, timeout=25) as resp:
                 out = json.loads(resp.read().decode())
@@ -38,19 +38,27 @@ def call_gemini(prompt: str) -> str:
 
 def clean_offer(line: str) -> str:
     cleaned = line.strip()
-    for _ in range(3):
-        cleaned = re.sub(r"^(offer\s*\d+\s*[:.\-\)]\s*|[\-\*\u2022]\s*|\d+\s*[.)]\s*)", "", cleaned, flags=re.IGNORECASE).strip()
+    cleaned = re.sub(r"^```[a-z]*", "", cleaned, flags=re.IGNORECASE).strip()
+    for _ in range(4):
+        cleaned = re.sub(r"^(\*{1,2}\s*offer\s*\d+\s*\*{1,2}\s*[:.\-\)]\s*|offer\s*\d+\s*[:.\-\)]\s*|[\-\*\u2022]\s*|\d+\s*[.)]\s*|\*{1,2})", "", cleaned, flags=re.IGNORECASE).strip()
     return cleaned
 
 def split_offers(text: str):
-    lines = [l.strip() for l in text.split("\n") if l.strip()]
-    offers = [clean_offer(l) for l in lines if re.match(r"(?i)^offer\s*\d+", l.strip())]
+    raw = text.replace("\r", "").strip().strip("`").strip()
+    # 1) split wherever a new "Offer N" marker starts (even mid-line, even with **bold**)
+    parts = re.split(r"(?i)(?=\*{0,2}offer\s*\d+\s*[:.\-\)])", raw)
+    offers = [clean_offer(p) for p in parts]
+    offers = [o for o in offers if len(o) >= 12]
+    # 2) fallback: split into sentences and group into 3 chunks
     if len(offers) < 3:
-        rest = [clean_offer(l) for l in lines if clean_offer(l) and clean_offer(l) not in offers]
-        offers = (offers + rest)[:3]
+        sentences = [s.strip() for s in re.split(r"(?<=[.!?])\s+", raw) if len(s.strip()) >= 12]
+        if len(sentences) >= 3:
+            n = len(sentences)
+            chunks = [" ".join(sentences[i::3]) for i in range(3)]
+            offers = [clean_offer(c) for c in chunks if clean_offer(c)]
     offers = [o for o in offers if o]
     if len(offers) < 3:
-        raise RuntimeError("Gemini returned fewer than 3 offers - try again")
+        raise RuntimeError("Gemini gave an unclear reply - tap generate again")
     return offers[:3]
 
 def generate_offers(customer: dict, db=None):
