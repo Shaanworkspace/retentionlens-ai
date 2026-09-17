@@ -164,6 +164,21 @@ def batch_from_s3(payload: S3Request, db: Session = Depends(get_db), user=Depend
         except Exception:
             pass
 
+def item_out(it):
+    try:
+        data = json.loads(it.data_json) if it.data_json else {}
+    except Exception:
+        data = {}
+    color = "red" if it.risk_id == 3 else "yellow" if it.risk_id == 2 else "green" if it.risk_id == 1 else "grey"
+    return {"id": it.id, "row": it.row_no, "customer_name": it.customer_name, "churn": it.churn, "churn_label": it.churn_label, "probability": it.probability, "offered_index": it.offered_index, "outcome": it.outcome, "risk_category": {"id": it.risk_id, "label": it.risk_label, "detail": it.risk_detail, "color": color}, "data": data}
+
+def alert_tier(probability: float) -> str:
+    if probability >= 0.85:
+        return "high"
+    if probability >= 0.75:
+        return "medium"
+    return "low"
+
 @router.get("/runs")
 def list_runs(db: Session = Depends(get_db), user=Depends(get_current_user)):
     rows = db.query(BatchRun).filter(BatchRun.user_id == user.id).order_by(BatchRun.created_at.desc()).limit(50).all()
@@ -175,12 +190,48 @@ def get_run(run_id: int, db: Session = Depends(get_db), user=Depends(get_current
     if not run:
         raise HTTPException(status_code=404, detail="Batch run not found")
     items = db.query(BatchItem).filter(BatchItem.batch_id == run.id).order_by(BatchItem.row_no).limit(2000).all()
-    out = []
-    for it in items:
-        try:
-            data = json.loads(it.data_json) if it.data_json else {}
-        except Exception:
-            data = {}
-        color = "red" if it.risk_id == 3 else "yellow" if it.risk_id == 2 else "green" if it.risk_id == 1 else "grey"
-        out.append({"row": it.row_no, "customer_name": it.customer_name, "churn": it.churn, "churn_label": it.churn_label, "probability": it.probability, "risk_category": {"id": it.risk_id, "label": it.risk_label, "detail": it.risk_detail, "color": color}, "data": data})
+    out = [item_out(it) for it in items]
     return {"id": run.id, "name": run.name, "filename": run.filename, "source": run.source, "total": run.total, "churn_count": run.churn_count, "tends_count": run.tends_count, "stay_count": run.stay_count, "churn_rate": run.churn_rate, "created_at": run.created_at.isoformat() if run.created_at else None, "results": out, "truncated_items": len(out) < run.total}
+
+@router.get("/runs/{run_id}/segment/{seg}")
+def get_segment(run_id: int, seg: str, db: Session = Depends(get_db), user=Depends(get_current_user)):
+    run = db.query(BatchRun).filter(BatchRun.id == run_id, BatchRun.user_id == user.id).first()
+    if not run:
+        raise HTTPException(status_code=404, detail="Batch run not found")
+    seg = seg.lower()
+    risk_map = {"churn": 3, "tends": 2, "stay": 1}
+    if seg not in risk_map:
+        raise HTTPException(status_code=400, detail="Segment must be churn, tends or stay")
+    items = db.query(BatchItem).filter(BatchItem.batch_id == run.id, BatchItem.risk_id == risk_map[seg]).order_by(BatchItem.probability.desc()).limit(2000).all()
+    out = [item_out(it) for it in items]
+    tiers = {"high": [], "medium": [], "low": []}
+    if seg == "churn":
+        for it in out:
+            tiers[alert_tier(it["probability"])].append(it)
+    return {"run_id": run.id, "run_name": run.name, "segment": seg, "total": len(out), "results": out, "tiers": tiers if seg == "churn" else None}
+
+@router.get("/runs/{run_id}/items/{row_no}")
+def get_batch_customer(run_id: int, row_no: int, db: Session = Depends(get_db), user=Depends(get_current_user)):
+    run = db.query(BatchRun).filter(BatchRun.id == run_id, BatchRun.user_id == user.id).first()
+    if not run:
+        raise HTTPException(status_code=404, detail="Batch run not found")
+    it = db.query(BatchItem).filter(BatchItem.batch_id == run.id, BatchItem.row_no == row_no).first()
+    if not it:
+        raise HTTPException(status_code=404, detail="Customer not found in this batch")
+    d = item_out(it)
+    d["run_name"] = run.name
+    return d
+
+@router.patch("/items/{item_id}/outcome")
+def set_item_outcome(item_id: int, payload: dict, db: Session = Depends(get_db), user=Depends(get_current_user)):
+    it = db.query(BatchItem).join(BatchRun, BatchItem.batch_id == BatchRun.id).filter(BatchItem.id == item_id, BatchRun.user_id == user.id).first()
+    if not it:
+        raise HTTPException(status_code=404, detail="Batch customer not found")
+    if payload.get("offered_index") is not None:
+        it.offered_index = payload["offered_index"]
+        it.outcome = "offered"
+    if payload.get("outcome") is not None:
+        it.outcome = payload["outcome"]
+    db.commit()
+    offered_pct = round((1 - it.probability) * 100, 1) if it.outcome == "offered" else None
+    return {"id": it.id, "offered_index": it.offered_index, "outcome": it.outcome, "retention_chance": offered_pct}

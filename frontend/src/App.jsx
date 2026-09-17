@@ -12,6 +12,8 @@ import BatchAnalysis from "./pages/BatchAnalysis";
 import CustomerDetail from "./pages/CustomerDetail";
 import BatchHistory from "./pages/BatchHistory";
 import BatchResult from "./pages/BatchResult";
+import SegmentPage from "./pages/SegmentPage";
+import BatchCustomer from "./pages/BatchCustomer";
 import Profile from "./pages/Profile";
 import Sidebar from "./components/Sidebar";
 import Customers from "./pages/Customers";
@@ -46,6 +48,8 @@ export default function App() {
           <Route path="/batch" element={<PrivatePage><BatchAnalysis /></PrivatePage>} />
           <Route path="/batches" element={<PrivatePage><BatchHistory /></PrivatePage>} />
           <Route path="/batch/:id" element={<PrivatePage><BatchResult /></PrivatePage>} />
+          <Route path="/batch/:id/segment/:seg" element={<PrivatePage><SegmentPage /></PrivatePage>} />
+          <Route path="/batch/:id/customer/:row" element={<PrivatePage><BatchCustomer /></PrivatePage>} />
           <Route path="/customer/:id" element={<PrivatePage><CustomerDetail /></PrivatePage>} />
           <Route path="/profile" element={<PrivatePage><Profile /></PrivatePage>} />
           <Route path="/customers" element={<PrivatePage><Customers /></PrivatePage>} />

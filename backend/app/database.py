@@ -74,6 +74,8 @@ class BatchItem(Base):
     risk_label = Column(String(50))
     risk_detail = Column(String(120))
     data_json = Column(Text)
+    offered_index = Column(Integer, nullable=True)
+    outcome = Column(String(20), nullable=True)
 
 # MySQL needs explicit create after all models defined (with retry for Aiven cold start)
 try:
@@ -97,6 +99,15 @@ try:
                 _conn.execute(_text("ALTER TABLE predictions ADD COLUMN offered_index INTEGER"))
             if "outcome" not in _pred_cols:
                 _conn.execute(_text("ALTER TABLE predictions ADD COLUMN outcome VARCHAR(20)"))
+        try:
+            _item_cols = {c["name"] for c in _inspect(engine).get_columns("batch_items")}
+            with engine.begin() as _conn2:
+                if "offered_index" not in _item_cols:
+                    _conn2.execute(_text("ALTER TABLE batch_items ADD COLUMN offered_index INTEGER"))
+                if "outcome" not in _item_cols:
+                    _conn2.execute(_text("ALTER TABLE batch_items ADD COLUMN outcome VARCHAR(20)"))
+        except Exception:
+            pass
 except Exception as e:
     print(f"DB init warning: {e} - will retry on first request")
     if is_sqlite:
