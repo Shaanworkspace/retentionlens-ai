@@ -8,10 +8,12 @@ from sqlalchemy.orm import Session
 from app.database import get_db, BatchRun, BatchItem
 from app.auth import get_current_user
 from app.ml.predictor import predict_one
+from app.schemas import fill_defaults, MANDATORY_FIELDS, OPTIONAL_DEFAULTS
 
 router = APIRouter(prefix="/api/batch", tags=["batch"])
 
-REQUIRED = ["tenure", "MonthlyCharges", "TotalCharges", "gender", "Partner", "Dependents", "PhoneService", "MultipleLines", "InternetService", "OnlineSecurity", "OnlineBackup", "DeviceProtection", "TechSupport", "StreamingTV", "StreamingMovies", "Contract", "PaperlessBilling", "PaymentMethod"]
+# Only these 6 columns are mandatory in batch files; the rest fall back to safe defaults.
+REQUIRED = list(MANDATORY_FIELDS)
 MAX_DIRECT_BYTES = 20 * 1024 * 1024
 MAX_ROWS = 5000
 
@@ -36,13 +38,17 @@ def normalize_row(row):
     for col in REQUIRED:
         val = row.get(col) or row.get(col.lower()) or lower.get(col.lower())
         if val is None or str(val).strip() == "":
-            raise ValueError(f"Missing column: {col}")
+            raise ValueError(f"Mandatory column missing: {col}")
         if col == "tenure":
             out[col] = int(float(val))
         elif col in ["MonthlyCharges", "TotalCharges"]:
             out[col] = float(val)
         else:
             out[col] = str(val).strip()
+    # OPTIONAL columns: blank cells fall back to safe dataset-mode defaults
+    for col, default in OPTIONAL_DEFAULTS.items():
+        val = row.get(col) or row.get(col.lower()) or lower.get(col.lower())
+        out[col] = str(val).strip() if val is not None and str(val).strip() != "" else default
     name = row.get("customer_name") or lower.get("customer_name") or ""
     out["customer_name"] = str(name).strip()[:120] or None
     return out
@@ -164,13 +170,20 @@ def batch_from_s3(payload: S3Request, db: Session = Depends(get_db), user=Depend
         except Exception:
             pass
 
+RISK_META = {
+    1: {"score": "0-40", "action": "Nurture & upsell"},
+    2: {"score": "40-65", "action": "Proactive outreach"},
+    3: {"score": "65-100", "action": "Immediate intervention"},
+}
+
 def item_out(it):
     try:
         data = json.loads(it.data_json) if it.data_json else {}
     except Exception:
         data = {}
     color = "red" if it.risk_id == 3 else "yellow" if it.risk_id == 2 else "green" if it.risk_id == 1 else "grey"
-    return {"id": it.id, "row": it.row_no, "customer_name": it.customer_name, "churn": it.churn, "churn_label": it.churn_label, "probability": it.probability, "offered_index": it.offered_index, "outcome": it.outcome, "risk_category": {"id": it.risk_id, "label": it.risk_label, "detail": it.risk_detail, "color": color}, "data": data}
+    meta = RISK_META.get(it.risk_id, {"score": "", "action": ""})
+    return {"id": it.id, "row": it.row_no, "customer_name": it.customer_name, "churn": it.churn, "churn_label": it.churn_label, "probability": it.probability, "offered_index": it.offered_index, "outcome": it.outcome, "risk_category": {"id": it.risk_id, "label": it.risk_label, "detail": it.risk_detail, "color": color, "score": meta["score"], "action": meta["action"]}, "data": data}
 
 def alert_tier(probability: float) -> str:
     if probability >= 0.85:
@@ -222,16 +235,4 @@ def get_batch_customer(run_id: int, row_no: int, db: Session = Depends(get_db), 
     d["run_name"] = run.name
     return d
 
-@router.patch("/items/{item_id}/outcome")
-def set_item_outcome(item_id: int, payload: dict, db: Session = Depends(get_db), user=Depends(get_current_user)):
-    it = db.query(BatchItem).join(BatchRun, BatchItem.batch_id == BatchRun.id).filter(BatchItem.id == item_id, BatchRun.user_id == user.id).first()
-    if not it:
-        raise HTTPException(status_code=404, detail="Batch customer not found")
-    if payload.get("offered_index") is not None:
-        it.offered_index = payload["offered_index"]
-        it.outcome = "offered"
-    if payload.get("outcome") is not None:
-        it.outcome = payload["outcome"]
-    db.commit()
-    offered_pct = round((1 - it.probability) * 100, 1) if it.outcome == "offered" else None
-    return {"id": it.id, "offered_index": it.offered_index, "outcome": it.outcome, "retention_chance": offered_pct}
+

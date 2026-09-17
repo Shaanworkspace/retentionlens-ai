@@ -40,7 +40,7 @@ export default function Dashboard() {
       <div className="mt-4 grid gap-5 sm:grid-cols-2">
         <Link to="/predict" className="group flex items-center gap-5 rounded-2xl border border-slate-200 bg-white p-6 transition hover:-translate-y-0.5 hover:border-sky-300 hover:shadow-lg">
           <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-sky-100 text-sky-600 transition group-hover:bg-sky-600 group-hover:text-white"><IconUser className="h-7 w-7" /></span>
-          <span><span className="block text-lg font-bold text-slate-900">Single customer</span><span className="mt-1 block text-sm text-slate-500">Enter one customer's details, predict churn risk, and generate GenAI retention offers.</span></span>
+          <span><span className="block text-lg font-bold text-slate-900">Single customer</span><span className="mt-1 block text-sm text-slate-500">Enter one customer's details and get an accurate churn risk with reasons.</span></span>
         </Link>
         <Link to="/batch" className="group flex items-center gap-5 rounded-2xl border border-slate-200 bg-white p-6 transition hover:-translate-y-0.5 hover:border-violet-300 hover:shadow-lg">
           <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-violet-100 text-violet-600 transition group-hover:bg-violet-600 group-hover:text-white"><IconUsers className="h-7 w-7" /></span>

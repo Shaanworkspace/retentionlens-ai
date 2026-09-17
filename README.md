@@ -64,10 +64,33 @@ cd frontend && npm install && npm run dev
 
 | Method | Path | Auth | Body | Response |
 |--------|------|------|------|----------|
-| POST | /api/auth/signup | No | email, password | access_token |
+| POST | /api/auth/signup | No | name, company, email, password | access_token |
 | POST | /api/auth/login | No | email, password | access_token |
-| POST | /api/predict | JWT | 18 churn features | churn, probability |
+| GET | /api/auth/me | JWT | - | name, company, email |
+| POST | /api/predict | JWT | 6 mandatory + 12 optional features | churn, probability, risk tier |
+| GET | /api/predict/history | JWT | - | last 10 predictions |
+| GET | /api/predict/{id} | JWT | - | single prediction |
+| POST | /api/batch/predict | JWT | CSV file + name | batch run summary |
+| POST | /api/batch/s3 | JWT | S3 URL + name | batch run summary |
+| GET | /api/batch/runs | JWT | - | batch history |
+| GET | /api/batch/runs/{id} | JWT | - | run + items |
+| GET | /api/batch/runs/{id}/segment/{seg} | JWT | seg=churn/tends/stay | segment + alert tiers |
 | GET | /api/health | No | - | status ok |
+
+## Fields: Mandatory vs Optional
+
+Only 6 fields drive the score (top churn drivers from EDA + feature importance):
+
+**Mandatory** (missing any = 422): `tenure`, `MonthlyCharges`, `TotalCharges`, `Contract`, `InternetService`, `PaymentMethod`
+
+**Optional** (blank = safe dataset-mode default): `gender` (Male), `Partner`/`Dependents` (No), `PhoneService` (Yes), `MultipleLines` (No), `OnlineSecurity`/`OnlineBackup`/`DeviceProtection`/`TechSupport`/`StreamingTV`/`StreamingMovies` (No), `PaperlessBilling` (Yes)
+
+## Data Notes (from research + EDA)
+
+* **Top drivers:** Month-to-month contract (42% churn), fiber optic (41%), tenure 0-12m (47%), electronic check (45%), no TechSupport/add-ons. Weak signals kept but low-weight: gender (50/50 split), PhoneService (near-constant).
+* **Missing values:** TotalCharges blanks (11 rows, 0.16%) -> median imputation. XGBoost handles residual NaNs natively; MICE tested in literature (+1.8pp) but rejected as overkill for 0.16%.
+* **Feature engineering kept:** TenureGroup bins (0-12/12-24/24-48/48+), long-contract flag, multi-service flag, monthly-to-total ratio. **Rejected:** customerID (identifier, zero signal), raw TotalCharges without tenure context (leaks tenure interaction), SeniorCitizen alone (weak without add-on interaction).
+* **Leakage guard:** all transforms inside sklearn Pipeline + ColumnTransformer, stratified 80/20 split, 5-fold CV.
 
 ## Docker
 

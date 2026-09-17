@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.database import get_db, Prediction
-from app.schemas import PredictRequest, PredictResponse, OutcomeUpdate
+from app.schemas import PredictRequest, PredictResponse, fill_defaults, MANDATORY_FIELDS
 from app.auth import get_current_user
 from app.ml.predictor import predict_one
 
@@ -9,9 +9,17 @@ router = APIRouter(prefix="/api", tags=["predict"])
 
 @router.post("/predict", response_model=PredictResponse)
 def predict(req: PredictRequest, db: Session = Depends(get_db), user=Depends(get_current_user)):
-    data = req.model_dump()
+    data = fill_defaults(req.model_dump())
+    missing = [f for f in MANDATORY_FIELDS if data.get(f) is None or (isinstance(data.get(f), str) and not data[f].strip())]
+    if missing:
+        raise HTTPException(status_code=422, detail=f"Mandatory fields missing: {', '.join(missing)}")
     model_data = {k: v for k, v in data.items() if k != "customer_name"}
-    label, proba, risk = predict_one(model_data)
+    try:
+        label, proba, risk = predict_one(model_data)
+    except FileNotFoundError as e:
+        raise HTTPException(status_code=500, detail=f"Model unavailable: {e}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Prediction failed: {e}")
     pred_id = None
     try:
         pred = Prediction(
@@ -55,20 +63,6 @@ def get_history(db: Session = Depends(get_db), user=Depends(get_current_user)):
         }
         for r in rows
     ]
-
-@router.patch("/predict/{pred_id}/outcome")
-def set_outcome(pred_id: int, payload: OutcomeUpdate, db: Session = Depends(get_db), user=Depends(get_current_user)):
-    pred = db.query(Prediction).filter(Prediction.id == pred_id, Prediction.user_id == user.id).first()
-    if not pred:
-        raise HTTPException(status_code=404, detail="Prediction not found")
-    if payload.offered_index is not None:
-        pred.offered_index = payload.offered_index
-        pred.outcome = "offered"
-    if payload.outcome is not None:
-        pred.outcome = payload.outcome
-    db.commit()
-    offered_pct = round((1 - pred.probability) * 100, 1) if pred.outcome == "offered" else None
-    return {"id": pred.id, "offered_index": pred.offered_index, "outcome": pred.outcome, "retention_chance": offered_pct}
 
 @router.get("/predict/{pred_id}")
 def get_one(pred_id: int, db: Session = Depends(get_db), user=Depends(get_current_user)):

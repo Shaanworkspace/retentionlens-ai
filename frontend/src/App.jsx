@@ -7,7 +7,6 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
 import Predict from "./pages/Predict";
-import Offers from "./pages/Offers";
 import BatchAnalysis from "./pages/BatchAnalysis";
 import CustomerDetail from "./pages/CustomerDetail";
 import BatchHistory from "./pages/BatchHistory";
@@ -44,7 +43,6 @@ export default function App() {
           <Route path="/dashboard" element={<PrivatePage><Dashboard /></PrivatePage>} />
           <Route path="/predict" element={<PrivatePage><Predict /></PrivatePage>} />
           <Route path="/predictions" element={<PrivatePage><Predictions /></PrivatePage>} />
-          <Route path="/offers" element={<PrivatePage><Offers /></PrivatePage>} />
           <Route path="/batch" element={<PrivatePage><BatchAnalysis /></PrivatePage>} />
           <Route path="/batches" element={<PrivatePage><BatchHistory /></PrivatePage>} />
           <Route path="/batch/:id" element={<PrivatePage><BatchResult /></PrivatePage>} />

@@ -24,25 +24,54 @@ class OutcomeUpdate(BaseModel):
     outcome: str | None = None
 
 class PredictRequest(BaseModel):
+    # Identity only - never used by the model
     customer_name: str | None = None
+    # MANDATORY: top churn drivers (Contract, tenure, charges, fiber, payment).
+    # Missing any of these -> 422, prediction cannot run.
     tenure: int
     MonthlyCharges: float
     TotalCharges: float
-    gender: str
-    Partner: str
-    Dependents: str
-    PhoneService: str
-    MultipleLines: str
-    InternetService: str
-    OnlineSecurity: str
-    OnlineBackup: str
-    DeviceProtection: str
-    TechSupport: str
-    StreamingTV: str
-    StreamingMovies: str
     Contract: str
-    PaperlessBilling: str
+    InternetService: str
     PaymentMethod: str
+    # OPTIONAL: safe dataset-mode defaults applied when skipped.
+    # gender/Partner/Dependents are weak signals; service flags default to "No".
+    gender: str | None = None
+    Partner: str | None = None
+    Dependents: str | None = None
+    PhoneService: str | None = None
+    MultipleLines: str | None = None
+    OnlineSecurity: str | None = None
+    OnlineBackup: str | None = None
+    DeviceProtection: str | None = None
+    TechSupport: str | None = None
+    StreamingTV: str | None = None
+    StreamingMovies: str | None = None
+    PaperlessBilling: str | None = None
+
+MANDATORY_FIELDS = ["tenure", "MonthlyCharges", "TotalCharges", "Contract", "InternetService", "PaymentMethod"]
+
+OPTIONAL_DEFAULTS = {
+    "gender": "Male",
+    "Partner": "No",
+    "Dependents": "No",
+    "PhoneService": "Yes",
+    "MultipleLines": "No",
+    "OnlineSecurity": "No",
+    "OnlineBackup": "No",
+    "DeviceProtection": "No",
+    "TechSupport": "No",
+    "StreamingTV": "No",
+    "StreamingMovies": "No",
+    "PaperlessBilling": "Yes",
+}
+
+def fill_defaults(data: dict) -> dict:
+    filled = dict(data)
+    for field, default in OPTIONAL_DEFAULTS.items():
+        if filled.get(field) is None or (isinstance(filled.get(field), str) and not filled[field].strip()):
+            filled[field] = default
+    return filled
 
 class RiskCategory(BaseModel):
     id: int

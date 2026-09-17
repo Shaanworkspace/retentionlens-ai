@@ -12,22 +12,23 @@ const defaults = {
   PaymentMethod: "Electronic check",
 };
 
+const MANDATORY = ["InternetService", "Contract", "PaymentMethod"];
 const fields = [
-  ["gender", "Gender", ["Male", "Female"]],
-  ["Partner", "Partner", ["Yes", "No"]],
-  ["Dependents", "Dependents", ["Yes", "No"]],
-  ["PhoneService", "Phone service", ["Yes", "No"]],
-  ["MultipleLines", "Multiple lines", ["Yes", "No", "No phone service"]],
-  ["InternetService", "Internet service", ["DSL", "Fiber optic", "No"]],
-  ["OnlineSecurity", "Online security", ["Yes", "No", "No internet service"]],
-  ["OnlineBackup", "Online backup", ["Yes", "No", "No internet service"]],
-  ["DeviceProtection", "Device protection", ["Yes", "No", "No internet service"]],
-  ["TechSupport", "Tech support", ["Yes", "No", "No internet service"]],
-  ["StreamingTV", "Streaming TV", ["Yes", "No", "No internet service"]],
-  ["StreamingMovies", "Streaming movies", ["Yes", "No", "No internet service"]],
-  ["Contract", "Contract", ["Month-to-month", "One year", "Two year"]],
-  ["PaperlessBilling", "Paperless billing", ["Yes", "No"]],
-  ["PaymentMethod", "Payment method", ["Electronic check", "Mailed check", "Bank transfer (automatic)", "Credit card (automatic)"]],
+  ["gender", "Gender", ["Male", "Female"], false],
+  ["Partner", "Partner", ["Yes", "No"], false],
+  ["Dependents", "Dependents", ["Yes", "No"], false],
+  ["PhoneService", "Phone service", ["Yes", "No"], false],
+  ["MultipleLines", "Multiple lines", ["Yes", "No", "No phone service"], false],
+  ["InternetService", "Internet service", ["DSL", "Fiber optic", "No"], true],
+  ["OnlineSecurity", "Online security", ["Yes", "No", "No internet service"], false],
+  ["OnlineBackup", "Online backup", ["Yes", "No", "No internet service"], false],
+  ["DeviceProtection", "Device protection", ["Yes", "No", "No internet service"], false],
+  ["TechSupport", "Tech support", ["Yes", "No", "No internet service"], false],
+  ["StreamingTV", "Streaming TV", ["Yes", "No", "No internet service"], false],
+  ["StreamingMovies", "Streaming movies", ["Yes", "No", "No internet service"], false],
+  ["Contract", "Contract", ["Month-to-month", "One year", "Two year"], true],
+  ["PaperlessBilling", "Paperless billing", ["Yes", "No"], false],
+  ["PaymentMethod", "Payment method", ["Electronic check", "Mailed check", "Bank transfer (automatic)", "Credit card (automatic)"], true],
 ];
 
 const tierColor = (c) => c === "red" ? "#ef4444" : c === "yellow" ? "#eab308" : "#22c55e";
@@ -71,8 +72,8 @@ export default function Predict() {
             </div>
             <div className="mt-5 grid gap-5 sm:grid-cols-3"><Field label="Total charges" value={form.TotalCharges} type="number" step="0.01" min="0" onChange={(v) => change("TotalCharges", Number(v))} /></div>
           </div>
-          <h2 className="mb-1 text-lg font-semibold text-slate-900">Services</h2><p className="mb-5 text-sm text-slate-500">All fields are required by the churn model.</p>
-          <div className="grid gap-5 sm:grid-cols-2">{fields.map(([key, label, options]) => <label key={key} className="block text-sm font-medium text-slate-700">{label}<span className="ml-1 text-red-500">*</span><select className="field mt-1.5" value={form[key]} onChange={(e) => change(key, e.target.value)} required>{options.map((o) => <option key={o}>{o}</option>)}</select></label>)}</div>
+          <h2 className="mb-1 text-lg font-semibold text-slate-900">Services</h2><p className="mb-5 text-sm text-slate-500"><span className="font-semibold text-red-500">*</span> mandatory drives the score · <span className="rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-500">optional</span> can be skipped (safe defaults apply).</p>
+          <div className="grid gap-5 sm:grid-cols-2">{fields.map(([key, label, options, req]) => <label key={key} className="block text-sm font-medium text-slate-700">{label}{req ? <span className="ml-1 text-red-500">*</span> : <span className="ml-1 rounded bg-slate-100 px-1.5 py-0.5 text-xs font-normal text-slate-500">optional</span>}<select className="field mt-1.5" value={form[key]} onChange={(e) => change(key, e.target.value)} required={req}>{options.map((o) => <option key={o}>{o}</option>)}</select></label>)}</div>
           <button type="submit" disabled={loading} className="primary-button mt-8 w-full py-4 text-base hover:shadow-lg hover:bg-blue-700 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2">{loading && <span className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />}{loading ? "Predicting..." : "Predict churn"}</button>
         </form>
         {error && <p className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>}
