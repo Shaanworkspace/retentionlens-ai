@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 export default function Signup() {
   const [name, setName] = useState("");
@@ -8,12 +8,13 @@ export default function Signup() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const { signup } = useAuth();
+  const { signup, isAuth } = useAuth();
   const navigate = useNavigate();
+  if (isAuth) return <Navigate to="/dashboard" replace />;
   const submit = async (e) => {
     e.preventDefault();
     setError(""); setLoading(true);
-    try { await signup(name, company, email, password); navigate("/dashboard"); } catch (err) { setError(err.response?.data?.detail || "Signup failed"); } finally { setLoading(false); }
+    try { await signup(name, company, email, password); navigate("/dashboard", { replace: true }); } catch (err) { setError(err.response?.data?.detail || "Signup failed"); } finally { setLoading(false); }
   };
   return (
     <div className="mx-auto max-w-md px-5 py-16">

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 const benefits = [
   { number: "01", title: "See risk sooner", text: "Turn account details into a clear churn signal before a renewal conversation becomes urgent.", color: "bg-indigo-600" },
@@ -15,6 +16,7 @@ const workflows = [
 
 export default function Landing() {
   const [activeWorkflow, setActiveWorkflow] = useState(0);
+  const { isAuth } = useAuth();
 
   return (
     <main className="overflow-hidden">
@@ -26,8 +28,13 @@ export default function Landing() {
             <h1 className="text-5xl font-bold leading-[0.98] tracking-[-0.05em] text-slate-950 sm:text-7xl">Make every customer moment count.</h1>
             <p className="mt-7 max-w-xl text-lg leading-8 text-slate-600">ChurnSense helps teams spot risk, understand what is changing, and take the next best retention action with confidence.</p>
             <div className="mt-9 flex flex-col gap-3 sm:flex-row">
-              <Link to="/signup" className="primary-button text-center">Start for free <span className="ml-1">→</span></Link>
-              <Link to="/predict" className="rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-center text-sm font-semibold text-slate-700 hover:border-indigo-300 hover:text-indigo-700">Explore a prediction</Link>
+              {isAuth ? <>
+                <Link to="/dashboard" className="primary-button text-center">Go to dashboard <span className="ml-1">→</span></Link>
+                <Link to="/predict" className="rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-center text-sm font-semibold text-slate-700 hover:border-indigo-300 hover:text-indigo-700">Analyze a customer</Link>
+              </> : <>
+                <Link to="/signup" className="primary-button text-center">Start for free <span className="ml-1">→</span></Link>
+                <Link to="/predict" className="rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-center text-sm font-semibold text-slate-700 hover:border-indigo-300 hover:text-indigo-700">Explore a prediction</Link>
+              </>}
             </div>
             <p className="mt-5 text-xs text-slate-500">Built for teams that want fewer surprises and better customer conversations.</p>
           </div>
@@ -53,7 +60,7 @@ export default function Landing() {
 
       <section id="proof" className="border-y border-slate-200 bg-white px-5 py-20 sm:px-8 sm:py-24"><div className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:items-center"><div><p className="text-sm font-bold uppercase tracking-[0.18em] text-teal-600">Built for measurable progress</p><h2 className="mt-4 text-3xl font-bold tracking-tight text-slate-950 sm:text-5xl">Less guesswork. More meaningful follow-through.</h2></div><div className="grid gap-4 sm:grid-cols-3"><div className="rounded-2xl bg-indigo-50 p-5"><p className="text-3xl font-bold text-indigo-950">7,043</p><p className="mt-2 text-sm text-indigo-900/70">records in the evaluation dataset</p></div><div className="rounded-2xl bg-teal-50 p-5"><p className="text-3xl font-bold text-teal-950">0.84</p><p className="mt-2 text-sm text-teal-900/70">ROC-AUC model performance</p></div><div className="rounded-2xl bg-orange-50 p-5"><p className="text-3xl font-bold text-orange-950">1 view</p><p className="mt-2 text-sm text-orange-900/70">from insight to next action</p></div></div></div></section>
 
-      <section className="px-5 py-20 sm:px-8 sm:py-28"><div className="mx-auto max-w-6xl overflow-hidden rounded-[2rem] bg-gradient-to-r from-indigo-600 via-violet-600 to-teal-500 px-6 py-14 text-white shadow-xl sm:px-14"><div className="flex flex-col items-start justify-between gap-8 sm:flex-row sm:items-center"><div><p className="text-sm font-bold uppercase tracking-[0.18em] text-indigo-100">Ready to begin?</p><h2 className="mt-3 max-w-xl text-3xl font-bold tracking-tight sm:text-5xl">Give your customer team a sharper view.</h2></div><Link to="/signup" className="rounded-lg bg-white px-5 py-3 text-sm font-bold text-indigo-700 hover:bg-indigo-50">Create your workspace <span className="ml-1">→</span></Link></div></div></section>
+      <section className="px-5 py-20 sm:px-8 sm:py-28"><div className="mx-auto max-w-6xl overflow-hidden rounded-[2rem] bg-gradient-to-r from-indigo-600 via-violet-600 to-teal-500 px-6 py-14 text-white shadow-xl sm:px-14"><div className="flex flex-col items-start justify-between gap-8 sm:flex-row sm:items-center"><div><p className="text-sm font-bold uppercase tracking-[0.18em] text-indigo-100">Ready to begin?</p><h2 className="mt-3 max-w-xl text-3xl font-bold tracking-tight sm:text-5xl">Give your customer team a sharper view.</h2></div>{isAuth ? <Link to="/dashboard" className="rounded-lg bg-white px-5 py-3 text-sm font-bold text-indigo-700 hover:bg-indigo-50">Go to dashboard <span className="ml-1">→</span></Link> : <Link to="/signup" className="rounded-lg bg-white px-5 py-3 text-sm font-bold text-indigo-700 hover:bg-indigo-50">Create your workspace <span className="ml-1">→</span></Link>}</div></div></section>
     </main>
   );
 }
