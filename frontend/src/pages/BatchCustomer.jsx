@@ -3,6 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import api from "../services/api";
 import Breadcrumbs from "../components/Breadcrumbs";
 import CustomerBoard from "../components/CustomerBoard";
+import { logGenAISend, logGenAIReply, logGenAIError } from "../services/genai-log";
 
 export default function BatchCustomer() {
   const { id, row } = useParams();
@@ -24,10 +25,12 @@ export default function BatchCustomer() {
   const genOffers = async () => {
     setOfferLoading(true); setOfferError("");
     try {
+      logGenAISend({ endpoint: "POST /api/retention/offers", customer: data.customer_name || `Row ${data.row}`, payload: data.data });
       const { data: res } = await api.post("/api/retention/offers", data.data);
+      logGenAIReply({ offers_count: res.offers?.length, offers: res.offers, prompt_sent_to_gemini: res.prompt });
       setOffers(res.offers && res.offers.length ? res.offers : []);
       setOfferedIdx(null); setSavedPct(null);
-    } catch (e) { setOfferError(e.response?.data?.detail || "Offer generation failed."); }
+    } catch (e) { logGenAIError(e); setOfferError(e.response?.data?.detail || "Offer generation failed."); }
     finally { setOfferLoading(false); }
   };
 

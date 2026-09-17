@@ -1,5 +1,6 @@
 import { useState } from "react";
 import api from "../services/api";
+import { logGenAISend, logGenAIReply, logGenAIError } from "../services/genai-log";
 export default function Offers() {
   const [form] = useState({ tenure: 8, MonthlyCharges: 85.5, TotalCharges: 600, gender: "Female", Partner: "No", Dependents: "No", PhoneService: "Yes", MultipleLines: "Yes", InternetService: "Fiber optic", OnlineSecurity: "No", OnlineBackup: "No", DeviceProtection: "No", TechSupport: "No", StreamingTV: "Yes", StreamingMovies: "Yes", Contract: "Month-to-month", PaperlessBilling: "Yes", PaymentMethod: "Electronic check" });
   const [data, setData] = useState(null);
@@ -8,7 +9,12 @@ export default function Offers() {
   const run = async () => {
     setError("");
     setLoading(true);
-    try { const { data } = await api.post("/api/retention/offers", form); setData(data); } catch (err) { setError(err.response?.data?.detail || "Offers could not be generated right now."); } finally { setLoading(false); }
+    try {
+      logGenAISend({ endpoint: "POST /api/retention/offers", payload: form });
+      const { data } = await api.post("/api/retention/offers", form);
+      logGenAIReply({ offers_count: data.offers?.length, offers: data.offers, prompt_sent_to_gemini: data.prompt });
+      setData(data);
+    } catch (err) { logGenAIError(err); setError(err.response?.data?.detail || "Offers could not be generated right now."); } finally { setLoading(false); }
   };
   return (
     <main className="mx-auto min-h-[calc(100vh-100px)] max-w-6xl px-5 py-10 sm:px-8">

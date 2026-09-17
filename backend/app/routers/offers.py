@@ -56,4 +56,5 @@ def get_offers(req: PredictRequest, db: Session = Depends(get_db), user=Depends(
         "offers": result["offers"],
         "offers_text": result["offers_text"],
         "history_used": result["history_used"],
+        "prompt": result["prompt"],
     }

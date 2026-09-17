@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import Breadcrumbs from "../components/Breadcrumbs";
 import api from "../services/api";
 import { IconSpark, IconCheck } from "../components/icons";
+import { logGenAISend, logGenAIReply, logGenAIError } from "../services/genai-log";
 
 const META = {
   churn: { title: "Will Churn", color: "#ef4444", soft: "bg-red-50" },
@@ -53,9 +54,11 @@ function TierOffers({ tierKey, tierTitle, rows }) {
     const avgProb = sorted.reduce((s, r) => s + Number(r.probability || 0), 0) / sorted.length;
     const rep = { ...mid.data, Contract: topContract, tenure: avgTenure, churn_prob: avgProb, risk_label: `${tierTitle} band (${sorted.length} customers)`, risk_detail: `Generalized offer for the whole ${tierTitle} group` };
     try {
+      logGenAISend({ endpoint: "POST /api/retention/offers", tier: tierTitle, customers: sorted.length, payload: rep });
       const { data } = await api.post("/api/retention/offers", rep);
+      logGenAIReply({ offers_count: data.offers?.length, offers: data.offers, prompt_sent_to_gemini: data.prompt });
       setOffers(data.offers && data.offers.length ? data.offers : []);
-    } catch (e) { setError(e.response?.data?.detail || "GenAI offer failed."); }
+    } catch (e) { logGenAIError(e); setError(e.response?.data?.detail || "GenAI offer failed."); }
     finally { setLoading(false); }
   };
 

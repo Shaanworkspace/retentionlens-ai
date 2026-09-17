@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import api from "../services/api";
 import Breadcrumbs from "../components/Breadcrumbs";
 import CustomerBoard from "../components/CustomerBoard";
+import { logGenAISend, logGenAIReply, logGenAIError } from "../services/genai-log";
 
 const riskOf = (p) => p >= 0.65 ? { id: 3, label: "Will Churn", detail: "Churning - Critical", color: "red", score: "65-100", action: "Immediate intervention" } : p >= 0.4 ? { id: 2, label: "Tends to Churn", detail: "At Risk - Needs Attention", color: "yellow", score: "40-65", action: "Proactive outreach" } : { id: 1, label: "Will Stay", detail: "Not Churn - Positive", color: "green", score: "0-40", action: "Nurture & upsell" };
 
@@ -33,16 +34,19 @@ export default function CustomerDetail() {
     setOfferLoading(true); setOfferError("");
     try {
       const { data: fresh } = await api.get(`/api/predict/${id}`);
-      const { data } = await api.post("/api/retention/offers", {
+      const payload = {
         customer_name: fresh.customer_name, tenure: fresh.tenure, MonthlyCharges: fresh.monthly_charges, TotalCharges: fresh.total_charges,
         gender: "Male", Partner: "No", Dependents: "No", PhoneService: "Yes", MultipleLines: "No",
         InternetService: fresh.internet_service, OnlineSecurity: "No", OnlineBackup: "No", DeviceProtection: "No",
         TechSupport: "No", StreamingTV: "No", StreamingMovies: "No", Contract: fresh.contract,
         PaperlessBilling: "Yes", PaymentMethod: fresh.payment_method,
-      });
+      };
+      logGenAISend({ endpoint: "POST /api/retention/offers", customer: payload.customer_name, payload });
+      const { data } = await api.post("/api/retention/offers", payload);
+      logGenAIReply({ prediction_id: data.prediction_id, risk: data.risk_category?.label, offers_count: data.offers?.length, offers: data.offers, prompt_sent_to_gemini: data.prompt });
       setOffers(data.offers && data.offers.length ? data.offers : []);
       setOfferedIdx(null); setSavedPct(null);
-    } catch (e) { setOfferError(e.response?.data?.detail || "Offer generation failed."); }
+    } catch (e) { logGenAIError(e); setOfferError(e.response?.data?.detail || "Offer generation failed."); }
     finally { setOfferLoading(false); }
   };
 
