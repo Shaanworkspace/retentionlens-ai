@@ -1,6 +1,8 @@
 from pydantic import BaseModel, EmailStr
 
 class SignupRequest(BaseModel):
+    name: str
+    company: str
     email: EmailStr
     password: str
 
@@ -12,7 +14,17 @@ class TokenResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
 
+class UserOut(BaseModel):
+    name: str | None = None
+    company: str | None = None
+    email: EmailStr
+
+class OutcomeUpdate(BaseModel):
+    offered_index: int | None = None
+    outcome: str | None = None
+
 class PredictRequest(BaseModel):
+    customer_name: str | None = None
     tenure: int
     MonthlyCharges: float
     TotalCharges: float
@@ -41,6 +53,7 @@ class RiskCategory(BaseModel):
     action: str
 
 class PredictResponse(BaseModel):
+    prediction_id: int | None = None
     churn: int
     churn_label: str
     probability: float

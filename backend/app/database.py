@@ -23,6 +23,8 @@ Base = declarative_base()
 class User(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(120), nullable=True)
+    company = Column(String(160), nullable=True)
     email = Column(String(255), unique=True, index=True, nullable=False)
     password_hash = Column(String(255), nullable=False)
 
@@ -40,11 +42,33 @@ class Prediction(Base):
     churn_label = Column(String(10))
     probability = Column(Float, nullable=False)
     offers = Column(Text)
+    customer_name = Column(String(120), nullable=True)
+    offered_index = Column(Integer, nullable=True)
+    outcome = Column(String(20), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow, index=True)
 
 # MySQL needs explicit create after all models defined (with retry for Aiven cold start)
 try:
     Base.metadata.create_all(bind=engine)
+    # lightweight migration for columns added after first release
+    from sqlalchemy import inspect as _inspect, text as _text
+    with engine.begin() as _conn:
+        _user_cols = {c["name"] for c in _inspect(engine).get_columns("users")}
+        if "name" not in _user_cols:
+            _conn.execute(_text("ALTER TABLE users ADD COLUMN name VARCHAR(120)"))
+        if "company" not in _user_cols:
+            _conn.execute(_text("ALTER TABLE users ADD COLUMN company VARCHAR(160)"))
+        try:
+            _pred_cols = {c["name"] for c in _inspect(engine).get_columns("predictions")}
+        except Exception:
+            _pred_cols = set()
+        if _pred_cols:
+            if "customer_name" not in _pred_cols:
+                _conn.execute(_text("ALTER TABLE predictions ADD COLUMN customer_name VARCHAR(120)"))
+            if "offered_index" not in _pred_cols:
+                _conn.execute(_text("ALTER TABLE predictions ADD COLUMN offered_index INTEGER"))
+            if "outcome" not in _pred_cols:
+                _conn.execute(_text("ALTER TABLE predictions ADD COLUMN outcome VARCHAR(20)"))
 except Exception as e:
     print(f"DB init warning: {e} - will retry on first request")
     if is_sqlite:

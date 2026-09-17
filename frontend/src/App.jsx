@@ -18,17 +18,17 @@ import HealthScores from "./pages/HealthScores";
 import Data from "./pages/Data";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
-import { useState } from "react";
+import { UIProvider } from "./context/UIContext";
 
 function PrivateLayout({ children }) {
-  const [open, setOpen] = useState(false);
-  return <div className="flex min-h-[calc(100vh-4rem)]"><button onClick={() => setOpen(!open)} className="glass-fab fixed bottom-4 left-4 z-40 rounded-full px-4 py-3 text-white shadow-lg md:hidden" aria-label="Toggle menu">☰</button><Sidebar open={open} onClose={() => setOpen(false)} /><main className="glass-main min-w-0 flex-1"><div className="mx-auto max-w-7xl p-6">{children}</div></main></div>;
+  return <div className="flex min-h-[calc(100vh-4rem)]"><Sidebar /><main className="glass-main min-w-0 flex-1"><div className="mx-auto max-w-7xl p-6">{children}</div></main></div>;
 }
 
 function PrivatePage({ children }) { return <PrivateRoute><PrivateLayout>{children}</PrivateLayout></PrivateRoute>; }
 export default function App() {
   return (
     <AuthProvider>
+      <UIProvider>
       <BrowserRouter>
         <Navbar />
         <Routes>
@@ -49,6 +49,7 @@ export default function App() {
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
+      </UIProvider>
     </AuthProvider>
   );
 }

@@ -1,35 +1,28 @@
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import Breadcrumbs from "../components/Breadcrumbs";
+import { IconBuilding, IconUser } from "../components/icons";
 
 export default function Profile() {
   const { user, logout } = useAuth();
-  const email = user?.email || "Account owner";
-  const initials = email.charAt(0).toUpperCase();
+  const name = user?.name || "Account owner";
+  const company = user?.company || "Telecom company";
+  const email = user?.email || "";
+  const initials = (name?.[0] || "U").toUpperCase();
 
-  return (
-    <main className="mx-auto max-w-5xl px-5 py-10 sm:px-8">
-      <div className="mb-8">
-        <p className="text-sm font-semibold uppercase tracking-wider text-slate-500">Account</p>
-        <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-900">Your profile</h1>
-        <p className="mt-2 text-slate-600">Manage your ChurnSense workspace and account access.</p>
+  return <><Breadcrumbs current="Profile Settings" />
+    <div className="panel overflow-hidden">
+      <div className="h-28 bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600" />
+      <div className="flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:p-8">
+        <span className="-mt-16 flex h-28 w-28 items-center justify-center rounded-3xl bg-white text-4xl font-bold text-indigo-600 shadow-lg ring-4 ring-white">{initials}</span>
+        <div><h1 className="text-3xl font-bold text-slate-900">{name}</h1><p className="mt-1 flex items-center gap-2 text-slate-600"><IconBuilding className="h-4 w-4" />{company}</p><p className="text-sm text-slate-500">{email}</p></div>
       </div>
-      <div className="grid gap-5 md:grid-cols-[1.1fr_0.9fr]">
-        <section className="panel p-6 sm:p-8">
-          <div className="flex items-center gap-4 border-b border-slate-100 pb-6">
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-500 text-2xl font-bold text-white">{initials}</div>
-            <div><h2 className="text-lg font-semibold text-slate-900">Workspace member</h2><p className="mt-1 text-sm text-slate-500">{email}</p></div>
-          </div>
-          <dl className="mt-6 grid gap-5 sm:grid-cols-2">
-            <div><dt className="text-xs font-semibold uppercase tracking-wider text-slate-400">Role</dt><dd className="mt-1 text-sm font-medium text-slate-800">Account owner</dd></div>
-            <div><dt className="text-xs font-semibold uppercase tracking-wider text-slate-400">Session</dt><dd className="mt-1 flex items-center gap-2 text-sm font-medium text-slate-800"><span className="h-2 w-2 rounded-full bg-emerald-500" />Active</dd></div>
-          </dl>
-        </section>
-        <section className="rounded-2xl border border-indigo-100 bg-gradient-to-br from-indigo-50 to-violet-50 p-6 sm:p-8">
-          <p className="text-sm font-semibold text-indigo-900">Keep your work moving</p>
-          <p className="mt-2 text-sm leading-6 text-indigo-800/80">Your session stays active between visits. Use the account menu whenever you are ready to sign out.</p>
-          <div className="mt-6 flex flex-col gap-3"><Link to="/dashboard" className="rounded-lg bg-indigo-600 px-4 py-2.5 text-center text-sm font-semibold text-white hover:bg-indigo-700">Back to dashboard</Link><button onClick={logout} className="rounded-lg border border-indigo-200 bg-white/70 px-4 py-2.5 text-sm font-semibold text-indigo-700 hover:bg-white">Log out</button></div>
-        </section>
+      <div className="grid gap-4 border-t border-slate-100 p-6 sm:grid-cols-3 sm:p-8">
+        <div className="rounded-xl bg-slate-50 p-4"><p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Company</p><p className="mt-1 font-semibold">{company}</p><p className="text-xs text-slate-500">Telecom · India</p></div>
+        <div className="rounded-xl bg-slate-50 p-4"><p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Address</p><p className="mt-1 font-semibold">New Delhi, India</p><p className="text-xs text-slate-500">Update from settings anytime</p></div>
+        <div className="rounded-xl bg-slate-50 p-4"><p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Role</p><p className="mt-1 flex items-center gap-2 font-semibold"><IconUser className="h-4 w-4" />Account owner</p><p className="flex items-center gap-2 text-xs text-slate-500"><span className="h-2 w-2 rounded-full bg-emerald-500" />Active session</p></div>
       </div>
-    </main>
-  );
+      <div className="flex gap-3 border-t border-slate-100 p-6"><Link to="/dashboard" className="rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700">Back to dashboard</Link><button onClick={logout} className="rounded-lg border px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50">Log out</button></div>
+    </div>
+  </>;
 }

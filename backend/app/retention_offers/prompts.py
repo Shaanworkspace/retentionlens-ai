@@ -6,9 +6,10 @@ TELECOM_STATS = """Telecom churn insights (IBM 7043 records):
 """
 
 SYSTEM_PROMPT = """You are a telecom retention specialist for Indian telecom companies.
-Given a new customer profile and telecom churn stats, suggest exactly 2 retention offers.
+Given a new customer profile and telecom churn stats, suggest exactly 3 retention offers.
+Format each offer on its own line starting with "Offer 1:", "Offer 2:", "Offer 3:".
 Each offer must have: title, discount/benefit, and why it will work for this risk tier.
-Keep total under 70 words. No generic advice - be specific to telecom and risk tier.
+Keep total under 110 words. No generic advice - be specific to telecom and risk tier.
 """
 
 def build_prompt(customer, history=None):
@@ -20,4 +21,4 @@ def build_prompt(customer, history=None):
 - Risk Tier: {customer.get('risk_label','')} - {customer.get('risk_detail','')}
 """
 
-    return f"{SYSTEM_PROMPT}\n{TELECOM_STATS}\n{customer_block}\nGive 2 offers now:"
+    return f"{SYSTEM_PROMPT}\n{TELECOM_STATS}\n{customer_block}\nGive 3 offers now:"

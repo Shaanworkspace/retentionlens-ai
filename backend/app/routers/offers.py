@@ -11,12 +11,15 @@ router = APIRouter(prefix="/api/retention", tags=["retention"])
 @router.post("/offers")
 def get_offers(req: PredictRequest, db: Session = Depends(get_db), user=Depends(get_current_user)):
     data = req.model_dump()
-    label, proba, risk = predict_one(data)
-    customer = {**data, "churn_prob": proba, "risk_label": risk["label"]}
+    model_data = {k: v for k, v in data.items() if k != "customer_name"}
+    label, proba, risk = predict_one(model_data)
+    customer = {**data, "churn_prob": proba, "risk_label": risk["label"], "risk_detail": risk["detail"]}
     result = generate_offers(customer, db)
+    pred_id = None
     try:
         pred = Prediction(
             user_id=user.id,
+            customer_name=(data.get("customer_name") or "").strip()[:120] or None,
             tenure=data["tenure"],
             monthly_charges=data["MonthlyCharges"],
             total_charges=data["TotalCharges"],
@@ -30,13 +33,17 @@ def get_offers(req: PredictRequest, db: Session = Depends(get_db), user=Depends(
         )
         db.add(pred)
         db.commit()
+        db.refresh(pred)
+        pred_id = pred.id
     except Exception:
         db.rollback()
     return {
+        "prediction_id": pred_id,
         "churn": label,
         "churn_label": "Yes" if label == 1 else "No",
         "probability": round(proba, 3),
         "risk_category": risk,
-        "offers": result["offers_text"],
+        "offers": result["offers"],
+        "offers_text": result["offers_text"],
         "history_used": result["history_used"],
     }
